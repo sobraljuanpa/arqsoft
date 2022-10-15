@@ -1,6 +1,4 @@
-const mongoose = require('mongoose');
-
-const addressSchema = new mongoose.Schema({
+const addressSchema = {
 	country: {
 		type: String,
 		required: true,
@@ -9,6 +7,4 @@ const addressSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
-});
-
-mongoose.model('Address', addressSchema);
+};

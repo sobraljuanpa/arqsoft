@@ -1,0 +1,15 @@
+{
+	"name": "suppliers-products-mock",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+    "start-mock": "mockoon-cli start -d suppliers-products.json",
+    "stop-mock": "mockoon-cli stop"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@mockoon/cli": "2.1.0"
+	}
+}

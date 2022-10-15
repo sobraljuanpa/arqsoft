@@ -24,10 +24,9 @@ const supplierSchema = new mongoose.Schema({
 		required: true,
 		unique: true,
 	},
-	// This has to be encrypted?
 	privateKey: {
 		type: String,
-		required: true,
+		required: false,
 	},
 });
 

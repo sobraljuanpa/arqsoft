@@ -1,0 +1,92 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Products suppliers",
+      "description": "This is the protocol for products suppliers\n",
+      "version": "1.0.0"
+    },
+    "tags": [
+      {
+        "name": "Product",
+        "description": "Event product"
+      }
+    ],
+    "paths": {
+      "/products": {
+        "get": {
+          "tags": [
+            "Product"
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProductsResponse"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Unauthorized"
+            },
+            "500": {
+              "description": "Internal error"
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "Product": {
+          "required": [
+            "cost",
+            "description",
+            "eventId",
+            "id",
+            "informationUrl",
+            "name"
+          ],
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "cost": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "informationUrl": {
+              "type": "string"
+            },
+            "eventId": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "validityDate": {
+              "type": "string"
+            },
+            "stock": {
+              "type": "integer"
+            }
+          }
+        },
+        "ProductsResponse": {
+          "type": "array",
+          "description": "List of products",
+          "items": {
+            "$ref": "#/components/schemas/Product"
+          }
+        }
+      }
+    }
+  }
