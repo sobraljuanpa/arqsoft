@@ -22,6 +22,16 @@ services:
     networks:
       - sa-network
     command: node index.js
+  events-api-rest:
+    restart: on-failure
+    build: events-api-rest/.
+    depends_on:
+      - mongo
+    ports:
+      - "3000:3000"
+    networks:
+      - sa-network
+    command: node index.js
 
 networks:
   sa-network:
