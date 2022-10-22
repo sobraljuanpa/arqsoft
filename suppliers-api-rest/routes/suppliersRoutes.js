@@ -20,7 +20,7 @@ router.post('/supplier', async (req, res) => {
 		await supplier.save();
 		res.status(200).send({ publicKey: publicKey });
 	} catch (err) {
-		return res.status(422).send({
+		return res.status(500).send({
 			status: constants.RESPONSE_STATUS_ERROR,
 			error: err.message,
 		});
@@ -38,10 +38,13 @@ router.get('/supplier/products', async (req, res) => {
 				res.status(200).send({ products: response.data });
 			})
 			.catch((error) => {
-				console.error(error);
+				return res.status(500).send({
+					status: constants.RESPONSE_STATUS_ERROR,
+					error: error.message,
+				});
 			});
 	} catch (err) {
-		return res.status(422).send({
+		return res.status(500).send({
 			status: constants.RESPONSE_STATUS_ERROR,
 			error: err.message,
 		});
