@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+// TODO agregar campo creador, que permita chequear diferencia entre aprobador y creador
+
 const eventSchema = new mongoose.Schema({
     name: {
         type: String,

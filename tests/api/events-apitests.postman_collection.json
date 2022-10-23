@@ -52,7 +52,7 @@
 			"response": []
 		},
 		{
-			"name": "Assert event created properly",
+			"name": "Assert event created properly Copy",
 			"event": [
 				{
 					"listen": "test",
@@ -122,6 +122,96 @@
 					],
 					"path": [
 						"events"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update created event",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"const responseData = pm.response.json();\r",
+							"pm.test(\"Event attributes updated correctly\", function (){\r",
+							"    pm.expect(responseData.name).to.equal(\"Prueba modificacion\");\r",
+							"    pm.expect(responseData.description).to.equal(\"Probando otro campo\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Prueba modificacion\",\r\n    \"description\": \"Probando otro campo\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/events/{{createdEventId}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"events",
+						"{{createdEventId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Enable event",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"const responseData = pm.response.json();\r",
+							"pm.test(\"Event attributes updated correctly\", function (){\r",
+							"    pm.expect(responseData.enabled).to.equal(true)});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"enabled\": \"true\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/events/{{createdEventId}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"events",
+						"{{createdEventId}}"
 					]
 				}
 			},
