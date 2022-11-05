@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 
 const Event = mongoose.model('Event');
 const router = express.Router();
+const auth = require("./middleware/authorization");
+var jwt = require('jsonwebtoken');
+const User = mongoose.model('User');
 
 class RestError extends Error{
     constructor(message, status){
@@ -11,7 +14,7 @@ class RestError extends Error{
     }
 }
 
-router.get('/events', async (req, res) => {
+router.get('/events', auth, async (req, res) => {
     try {
         let events = await Event.find().lean();
         res.status(200).send(events);
@@ -20,7 +23,7 @@ router.get('/events', async (req, res) => {
     }
 });
 
-router.post('/events', async (req, res) => {
+router.post('/events', auth, async (req, res) => {
 
     let event = new Event(
         ({ name, description, startDate, endDate, country, city } = req.body)
@@ -31,7 +34,7 @@ router.post('/events', async (req, res) => {
     res.status(201).send(createdEvent);
 });
 
-router.get('/events/:id', async (req, res) => {
+router.get('/events/:id', auth, async (req, res) => {
     const id = req.params.id;
     const event = await Event.findById(id).lean();
 
@@ -44,7 +47,7 @@ router.get('/events/:id', async (req, res) => {
 
 // Put para pre aprobacion (modifico varios campos de la entidad, no se permite modificar enabled)
 
-router.put('/events/:id', async (req, res) => {
+router.put('/events/:id', auth, async (req, res) => {
     const id = req.params.id;
     let eventToUpdate = await Event.findById(id).lean();
     let event = getModifiedEventFields(req);
@@ -85,7 +88,7 @@ function getModifiedEventFields(request) {
 };
 
 // Patch para aprobacion y post aprobacion (solo modifico enabled, enddate o startdate)
-router.patch('/events/:id', async (req, res) => {
+router.patch('/events/:id', auth, async (req, res) => {
     const id = req.params.id;
     let paramsToUpdate = {};
     // TODO validar que el usuario actualizador y el creador de la entidad no sean el mismo si se modifica el campo enabled
@@ -104,5 +107,97 @@ router.patch('/events/:id', async (req, res) => {
 
     res.status(200).send(updatedEvent);
 });
+
+router.get("/test", auth, (req, res) => {
+    res.status(200).send("Token valido");
+  });
+
+// Register
+router.post("/register", async (req, res) => {
+	// our register logic goes here...
+	try {
+		// Get user input
+		const { first_name, last_name, email, password, role } = req.body;
+	
+		// Validate user input
+		if (!(email && password && first_name && last_name && role)) {
+			res.status(400).send("Campos incompletos");
+		}
+		// check if user already exist
+		// Validate if user exist in our database
+		const oldUser = await User.findOne({ email });
+	
+		if (oldUser) {
+			return res.status(409).send("Este email ya esta siendo utilizado");
+		}
+	
+		// Create user in our database
+		const user = await User.create({
+			first_name,
+			last_name,
+			email: email.toLowerCase(), // sanitize: convert email to lowercase
+			password: password,
+            role: role,
+		});
+		// Create token
+         //TODO: Token key must be on .env
+        TOKEN_KEY = '43dnjndiuwed';
+		const token = jwt.sign(
+			{ user_id: user._id, email },
+			TOKEN_KEY,
+			{
+				expiresIn: "2h",
+			}
+		);
+		// save user token
+		user.token = token;
+	
+		// return new user
+		res.status(201).json(user);
+	} catch (err) {
+		console.log(err);
+	}
+	// Our register logic ends here
+	});
+	
+	// Login
+	router.post("/login", async (req, res) => {
+	
+		// Our login logic starts here
+		try {
+			// Get user input
+			const { email, password } = req.body;
+	
+			// Validate user input
+			if (!(email && password)) {
+				res.status(400).send("All input is required");
+			}
+			// Validate if user exist in our database
+			const user = await User.findOne({ email });
+            //TODO: Token key must be on .env
+			if (user && password == user.password) {
+				// Create token
+                TOKEN_KEY = '43dnjndiuwed';
+				const token = jwt.sign(
+					{ user_id: user._id, email },
+					TOKEN_KEY,
+					{
+						expiresIn: "2h",
+					}
+				);
+	
+				// save user token
+				user.token = token;
+	
+				// user
+				res.status(200).json(user);
+			}
+			res.status(400).send("Invalid Credentials");
+		} catch (err) {
+			console.log(err);
+		}
+		// Our register logic ends here
+	});
+
 
 module.exports = router;
