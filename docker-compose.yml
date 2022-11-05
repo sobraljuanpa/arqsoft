@@ -12,6 +12,13 @@ services:
       - "27017:27017"
     networks:
       - sa-network
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - sa-network
   suppliers-api-rest:
     restart: on-failure
     build: suppliers-api-rest/.
@@ -28,12 +35,23 @@ services:
     build: events-api-rest/.
     depends_on:
       - mongo
+      - general-logs-subscriber
     ports:
       - "3000:3000"
     networks:
       - sa-network
     volumes:
       - ./events-api-rest/:/app
+  general-logs-subscriber:
+    restart: on-failure
+    build: general-logs-subscriber/.
+    depends_on:
+      - redis
+    ports:
+      - "3001:3001"
+    networks:
+      - sa-network
+    command: node index.js
 
 networks:
   sa-network:
