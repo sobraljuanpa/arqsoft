@@ -1,6 +1,9 @@
 const express = require("express");
-const redis = require("redis");
+const mongoose = require('mongoose');
 
+require('./models/requestLog');
+const RequestLog = mongoose.model('RequestLog');
+const redis = require("redis");
 const client = redis.createClient({
   socket: {
     host: 'redis',
@@ -12,17 +15,25 @@ subscriber.connect();
 
 const app = express();
 
-subscriber.subscribe('request', (message) => {
-    console.log(message); 
+subscriber.subscribe('request', async (message) => {
+  let messageObject = JSON.parse(message);
+  let request = new RequestLog(({method, url, body, statusCode, timetaken} = messageObject));
+  await request.save();
 });
 
+// Todavia falta los endpoints para consultar logs
 app.get("/", (req, res) => {
   res.send("Subscriber One");
 })
 
-app.listen(3001, () => {
-  console.log("server is listening to port 3001");
-})
+main().catch(err => console.log(err));
 
+async function main() {
+    await mongoose.connect('mongodb://mongo:27017/test').then(
+        () => console.log('Connected to mongo instance')
+    );
 
-//Aca faltaria todavia bajar los logs a bd y hacer una api pa consultarlos, pero por ahora zafa
+    app.listen(3001, () => {
+      console.log("server is listening to port 3001");
+    })
+}

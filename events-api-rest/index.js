@@ -29,8 +29,8 @@ async function logRequest (req, res, next) {
             'method': req.method,
             'url': req.originalUrl,
             'body': req.body,
-            'status': this.statusCode,
-            'timetaken (ms)': diff
+            'statusCode': this.statusCode,
+            'timetaken': diff
         }));
     });
     next();
