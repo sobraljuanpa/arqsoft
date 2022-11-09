@@ -21,18 +21,48 @@ publisher.connect();
 // esto habria que buscar la forma de dejarlo reutilizable, no logre aislarlo en un modulo que desp se copien pq 
 // dockerfile no te deja hacer COPY ../algo, ampliaremos
 async function logRequest (req, res, next) {
-    let inboundTimeStamp = new Date();
+    let inboundTimestamp = new Date();
     res.on('finish', async function() {
-        let outboundTimeStamp = new Date();
-        let diff = outboundTimeStamp.getMilliseconds() - inboundTimeStamp.getMilliseconds();
+        let outboundTimestamp = new Date();
+        let diff = outboundTimestamp.getMilliseconds() - inboundTimestamp.getMilliseconds();
         await publisher.publish('request', JSON.stringify({
             'method': req.method,
             'url': req.originalUrl,
             'body': req.body,
             'statusCode': this.statusCode,
-            'timetaken': diff
+            'timetaken': diff,
+            'timestamp': inboundTimestamp.toUTCString()
         }));
     });
+    next();
+}
+
+async function logEventPublishing (req, res, next) {
+    let timestamp = new Date().toUTCString();
+    res.on('finish', async function() {
+        if (req.method == "PATCH" && this.statusCode == 200) {
+            let eventId = req.originalUrl.split('/').pop();
+            await publisher.publish('eventPublishing', JSON.stringify({
+                'eventId': eventId,
+                'timestamp': timestamp
+            }));
+        }
+    });
+    next();
+}
+
+async function logEventUpdate (req, res, next) {
+    let timestamp = new Date().toUTCString();
+    res.on('finish', async function() {
+        if (req.method == "PUT" && this.statusCode == 200) {
+            let eventId = req.originalUrl.split('/').pop();
+            await publisher.publish('eventUpdate', JSON.stringify({
+                'eventId': eventId,
+                'body': req.body,
+                'timestamp': timestamp
+            }));
+        }
+    })
     next();
 }
 
@@ -52,6 +82,8 @@ async function logRequest (req, res, next) {
 // configuro middleware
 app.use(bodyParser.json());
 app.use(logRequest);//importante configurar middleware antes de las rutas si no se lo saltea
+app.use(logEventUpdate);
+app.use(logEventPublishing);
 app.use(eventsRoutes);
 
 main().catch(err => console.log(err));

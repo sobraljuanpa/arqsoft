@@ -45,8 +45,8 @@ router.get('/events/:id', auth, async (req, res) => {
     res.status(200).send(event);
 });
 
-// Put para pre aprobacion (modifico varios campos de la entidad, no se permite modificar enabled)
-
+// Put para modificacion de todos los campos, se chequea que no se quiera intentar habilitar/deshabilitar
+// ni se actualicen campos que no sean start/end date si el evento ya esta habilitado.
 router.put('/events/:id', auth, async (req, res) => {
     const id = req.params.id;
     let eventToUpdate = await Event.findById(id).lean();
@@ -87,7 +87,7 @@ function getModifiedEventFields(request) {
     return params;
 };
 
-// Patch para aprobacion y post aprobacion (solo modifico enabled, enddate o startdate)
+// Patch para aprobacion unicamente, facilita el tema de loggeo
 router.patch('/events/:id', auth, async (req, res) => {
     const id = req.params.id;
     let paramsToUpdate = {};
