@@ -1,0 +1,5 @@
+{
+    "jwt": {
+        "accessTokenSecret": "eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTY2ODIzMDM1NywiaWF0IjoxNjY4MjMwMzU3fQ.P86p-2-lTmqMTei48uBlHtVq-TlyQvWMx_yfTDmz7Bg"
+    }
+}
