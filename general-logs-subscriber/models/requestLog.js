@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 
-// TODO determinar si queremos timestamp, para estos creo que si
-
 const requestLogSchema = new mongoose.Schema({
     method: {
         type: String,
@@ -21,6 +19,10 @@ const requestLogSchema = new mongoose.Schema({
     },
     timetaken: { //ms
         type: Number,
+        required: true
+    },
+    timestamp: {
+        type: Date,
         required: true
     }
 });

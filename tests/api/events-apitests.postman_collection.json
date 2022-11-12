@@ -1,10 +1,62 @@
 {
 	"info": {
-		"_postman_id": "bc3f77c9-c36e-4119-a0aa-c3401ada8e65",
+		"_postman_id": "e5e4a37d-d1f7-4df8-88eb-5b10e7f66e84",
 		"name": "events-apitests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
+		{
+			"name": "Create user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"first_name\": \"admin\",\r\n    \"last_name\": \"admin\",\r\n    \"email\": \"admin\",\r\n    \"password\": \"admin\",\r\n    \"role\": \"admin\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{authBaseURL}}/register",
+					"host": [
+						"{{authBaseURL}}"
+					],
+					"path": [
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Authenticate user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"admin\",\r\n    \"password\": \"admin\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{authBaseURL}}/login",
+					"host": [
+						"{{authBaseURL}}"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
 		{
 			"name": "Add event",
 			"event": [
@@ -247,6 +299,11 @@
 		{
 			"key": "createdEventId",
 			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "authBaseURL",
+			"value": "http://localhost:3002",
 			"type": "default"
 		}
 	]
