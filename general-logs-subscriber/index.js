@@ -1,12 +1,13 @@
 const express = require("express");
 const mongoose = require('mongoose');
-
 require('./models/requestLog');
 require('./models/eventPublishingLog');
 require('./models/eventUpdateLog');
 const RequestLog = mongoose.model('RequestLog');
 const EventPublishingLog = mongoose.model('EventPublishingLog');
 const EventUpdateLog = mongoose.model('EventUpdateLog');
+
+// Redis
 const redis = require("redis");
 const client = redis.createClient({
   socket: {
@@ -16,8 +17,6 @@ const client = redis.createClient({
 });
 const subscriber = client.duplicate();
 subscriber.connect();
-
-const app = express();
 
 subscriber.subscribe('request', async (message) => {
   let messageObject = JSON.parse(message);
@@ -37,6 +36,8 @@ subscriber.subscribe('eventUpdate', async (message) => {
   await event.save();
 });
 
+// Express
+const app = express();
 // Todavia falta los endpoints para consultar logs
 app.get("/", (req, res) => {
   res.send("Subscriber One");
@@ -49,7 +50,7 @@ async function main() {
         () => console.log('Connected to mongo instance')
     );
 
-    app.listen(3001, () => {
-      console.log("server is listening to port 3001");
+    app.listen(3003, () => {
+      console.log("server is listening to port 3003");
     })
 }
