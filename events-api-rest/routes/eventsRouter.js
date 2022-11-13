@@ -1,6 +1,5 @@
 const express = require('express');
 const mongoose = require('mongoose');
-
 const Event = mongoose.model('Event');
 const router = express.Router();
 const auth = require("./middleware/authorization");
@@ -12,7 +11,7 @@ class RestError extends Error{
     }
 }
 
-router.get('/events', auth, async (req, res) => {
+router.get('/events', async (req, res) => {
     try {
         let events = await Event.find().lean();
         res.status(200).send(events);
@@ -33,7 +32,7 @@ router.post('/events', auth, async (req, res) => {
     res.status(201).send(createdEvent);
 });
 
-router.get('/events/:id', auth, async (req, res) => {
+router.get('/events/:id', async (req, res) => {
     const id = req.params.id;
     const event = await Event.findById(id).lean();
 
@@ -44,26 +43,13 @@ router.get('/events/:id', auth, async (req, res) => {
     res.status(200).send(event);
 });
 
-// Put para modificacion de todos los campos, se chequea que no se quiera intentar habilitar/deshabilitar
-// ni se actualicen campos que no sean start/end date si el evento ya esta habilitado.
-router.put('/events/:id', auth, async (req, res) => {
-    const id = req.params.id;
-    let eventToUpdate = await Event.findById(id).lean();
-    let event = getModifiedEventFields(req);
-    
-    if (!eventToUpdate.enabled){
-        let updatedEvent = await Event.findOneAndUpdate(id, event, {
-            new: true
-        });
-        res.status(200).send(updatedEvent);
-    } else {
-        res.status(400).send({ error: "Event is enabled, can only modify start/end date using patch." });
-    }
-});
+function validPUTRequestBody(request) {
+    if (request.body.name || request.body.description || request.body.country || request.body.city) return false;
+    return true;
+};
 
-function getModifiedEventFields(request) {
+function getDisabledModifiedEventFields(request) {
     let params = {};
-
     if (request.body.name) {
         params.name = request.body.name; 
     }
@@ -82,15 +68,62 @@ function getModifiedEventFields(request) {
     if (request.body.city) {
         params.city = request.body.city;
     }
-
     return params;
 };
+
+function getEnabledModifiedEventFields(request) {
+    let params = {};
+    if (request.body.startDate) {
+        params.startDate = request.body.startDate;
+    }
+    if (request.body.endDate) {
+        params.endDate = request.body.endDate;
+    }
+    return params;
+};
+
+// Put para modificacion de todos los campos menos creator y enabled
+router.put('/events/:id', auth, async (req, res) => {
+    // tendria que tener un try catch y levantar un 500 en el catch nomas
+    if (req.body.enabled) {
+        res.status(400).send("Use PATCH for enabling events, PUT does not support that operation.");
+    } else if (req.body.creator) {
+        res.status(400).send("Cannot update event creator.");
+    } else {
+        const id = req.params.id;
+        const event = await Event.findById(id).lean();
+        console.log(id);
+        console.log("Estoy en el else");
+        console.log(event.enabled);
+        console.log(event.enabled == true);
+        if (event.enabled) {
+            console.log("Entre al if event.enabled");
+            console.log(validPUTRequestBody(req));
+            if (validPUTRequestBody(req)) {
+                let eventFields = getEnabledModifiedEventFields(req);
+                let updatedEvent = await Event.findOneAndUpdate(id, eventFields, {
+                    new: true
+                });
+                res.status(200).send(updatedEvent);
+            } else {
+                res.status(400).send("Event is enabled, can only update start or end date.")
+            }
+        } else {
+            console.log("Entre al else event.enabled");
+            let eventFields = getDisabledModifiedEventFields(req);
+            let updatedEvent = await Event.findOneAndUpdate(id, eventFields, {
+                new: true
+            });
+            res.status(200).send(updatedEvent);
+        }
+    }
+});
 
 async function approvingUserIsNotCreator(eventId, approver) {
     const eventToUpdate = await Event.findById(eventId).lean();
     const creator = eventToUpdate.creator;
     return creator != approver;
-}
+};
 
 // Patch para aprobacion unicamente, facilita el tema de loggeo
 router.patch('/events/:id', auth, async (req, res) => {
