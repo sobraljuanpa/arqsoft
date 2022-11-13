@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 
-// TODO agregar campo creador, que permita chequear diferencia entre aprobador y creador
-
 const eventSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -24,6 +22,10 @@ const eventSchema = new mongoose.Schema({
         required: true
     },
     city: {
+        type: String,
+        required: true
+    },
+    creator: {
         type: String,
         required: true
     },

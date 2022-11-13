@@ -26,6 +26,7 @@ router.post('/events', auth, async (req, res) => {
     let event = new Event(
         ({ name, description, startDate, endDate, country, city } = req.body)
     );
+    event.creator = req.user.email;
     event.enabled = false;
 
     const createdEvent = await event.save();
@@ -85,25 +86,25 @@ function getModifiedEventFields(request) {
     return params;
 };
 
+async function approvingUserIsNotCreator(eventId, approver) {
+    const eventToUpdate = await Event.findById(eventId).lean();
+    const creator = eventToUpdate.creator;
+    return creator != approver;
+}
+
 // Patch para aprobacion unicamente, facilita el tema de loggeo
 router.patch('/events/:id', auth, async (req, res) => {
     const id = req.params.id;
     let paramsToUpdate = {};
-    // TODO validar que el usuario actualizador y el creador de la entidad no sean el mismo si se modifica el campo enabled
-
-    if (req.body.enabled) {
+    if (await approvingUserIsNotCreator(id, req.user.email)) {
         paramsToUpdate.enabled = req.body.enabled;
-    } else if (req.body.startDate) {
-        paramsToUpdate.startDate = req.body.startDate;
-    } else if (req.body.endDate) {
-        paramsToUpdate.endDate = req.body.endDate;
+        let updatedEvent = await Event.findOneAndUpdate(id, paramsToUpdate, {
+            new: true
+        });
+        res.status(200).send(updatedEvent);
+    } else {
+        res.status(400).send("Event can't be approved by same user that created it");
     }
-
-    let updatedEvent = await Event.findOneAndUpdate(id, paramsToUpdate, {
-        new: true
-    });
-
-    res.status(200).send(updatedEvent);
 });
 
 module.exports = router;
