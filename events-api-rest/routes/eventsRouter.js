@@ -101,13 +101,7 @@ router.put('/events/:id', auth, async (req, res) => {
 	} else {
 		const id = req.params.id;
 		const event = await Event.findById(id).lean();
-		console.log(id);
-		console.log('Estoy en el else');
-		console.log(event.enabled);
-		console.log(event.enabled == true);
 		if (event.enabled) {
-			console.log('Entre al if event.enabled');
-			console.log(validPUTRequestBody(req));
 			if (validPUTRequestBody(req)) {
 				let eventFields = getEnabledModifiedEventFields(req);
 				let updatedEvent = await Event.findOneAndUpdate(id, eventFields, {
@@ -120,7 +114,6 @@ router.put('/events/:id', auth, async (req, res) => {
 					.send('Event is enabled, can only update start or end date.');
 			}
 		} else {
-			console.log('Entre al else event.enabled');
 			let eventFields = getDisabledModifiedEventFields(req);
 			let updatedEvent = await Event.findOneAndUpdate(id, eventFields, {
 				new: true,

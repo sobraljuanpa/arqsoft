@@ -23,7 +23,6 @@ publisher.connect();
 async function logRequest(req, res, next) {
 	let inboundTimestamp = new Date();
 	res.on('finish', async function () {
-		console.log(JSON.stringify(req.user));
 		let outboundTimestamp = new Date();
 		let diff =
 			outboundTimestamp.getMilliseconds() - inboundTimestamp.getMilliseconds();
