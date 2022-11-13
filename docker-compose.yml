@@ -1,5 +1,6 @@
 version: "3.7"
 services:
+  # dependencias
   mongo:
     container_name: mongo
     image: mongo:latest
@@ -12,6 +13,27 @@ services:
       - "27017:27017"
     networks:
       - sa-network
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - sa-network
+  # propios
+  events-api-rest:
+    restart: on-failure
+    build: events-api-rest/.
+    depends_on:
+      - mongo
+      - general-logs-subscriber
+    ports:
+      - "3000:3000"
+    networks:
+      - sa-network
+    volumes:
+      - ./events-api-rest/:/app
+      - ./auth-api-rest/keys:/app/keys
   suppliers-api-rest:
     restart: on-failure
     build: suppliers-api-rest/.
@@ -23,17 +45,28 @@ services:
       - sa-network
     volumes:
       - ./suppliers-api-rest/:/app
-  events-api-rest:
+  auth-api-rest:
     restart: on-failure
-    build: events-api-rest/.
+    build: auth-api-rest/.
     depends_on:
       - mongo
     ports:
-      - "3000:3000"
+      - "3002:3002"
     networks:
       - sa-network
     volumes:
-      - ./events-api-rest/:/app
+      - ./auth-api-rest/:/app
+  general-logs-subscriber:
+    restart: on-failure
+    build: general-logs-subscriber/.
+    depends_on:
+      - redis
+    ports:
+      - "3003:3003"
+    networks:
+      - sa-network
+    volumes:
+      - ./general-logs-subscriber/:/app
 
 networks:
   sa-network:
