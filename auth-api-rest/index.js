@@ -1,15 +1,14 @@
-require('./models/eventModel');
 require('./models/userModel');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-
-const eventsRoutes = require('./routes/eventsRouter');
 const app = express();
 const port = 3000;
+const authRoutes = require('./routes/authRouter');
+
 
 app.use(bodyParser.json());
-app.use(eventsRoutes);
+app.use(authRoutes);
 
 main().catch(err => console.log(err));
 

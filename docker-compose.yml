@@ -21,7 +21,8 @@ services:
       - "3001:3001"
     networks:
       - sa-network
-    command: node index.js
+    volumes:
+      - ./suppliers-api-rest/:/app
   events-api-rest:
     restart: on-failure
     build: events-api-rest/.
@@ -31,7 +32,8 @@ services:
       - "3000:3000"
     networks:
       - sa-network
-    command: node index.js
+    volumes:
+      - ./events-api-rest/:/app
 
 networks:
   sa-network:
