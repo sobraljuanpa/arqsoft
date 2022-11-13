@@ -13,19 +13,24 @@ router.post('/auth', async (req, res) => {
 	}
 	try {
 		const PUBLIC_KEY = fs.readFileSync('./keys/public.key', 'utf8');
-		jwt.verify(token, PUBLIC_KEY, { algorithm: 'RS256' }, async function (err, user) {
-			if (err) {
-				return res.status(403).send(err.message);
-			} else {
-				req.user = user;
-				email = user.email;
-				const newUser = await User.findOne({ email });
-				if ('admin' != newUser.role) {
-					return res.status(401).send('Usuario Invalido');
+		jwt.verify(
+			token,
+			PUBLIC_KEY,
+			{ algorithm: 'RS256' },
+			async function (err, user) {
+				if (err) {
+					return res.status(403).send(err.message);
+				} else {
+					req.user = user;
+					email = user.email;
+					const newUser = await User.findOne({ email });
+					if ('admin' != newUser.role) {
+						return res.status(401).send('Usuario Invalido');
+					}
+					res.status(200).json(newUser.role);
 				}
-				res.status(200).json(newUser.role);
 			}
-		});
+		);
 	} catch (err) {
 		return res.status(401).send('Token Invalido');
 	}

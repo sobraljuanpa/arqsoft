@@ -19,19 +19,24 @@ const verifyAdminToken = async (req, res, next) => {
 		next(new RestError('A token is required for authentication', 401));
 	}
 	const PUBLIC_KEY = fs.readFileSync('./keys/public.key', 'utf8');
-	await jwt.verify(token, PUBLIC_KEY, { algorithm: 'RS256' }, async function (err, user) {
-		if (err) {
-			next(new RestError(err.message, 403));
-		} else {
-			req.user = user;
-			email = user.email;
-			const newUser = await User.findOne({ email });
-			if ('admin' != newUser.role) {
-				return res.status(401).send('Usuario Invalido');
+	await jwt.verify(
+		token,
+		PUBLIC_KEY,
+		{ algorithm: 'RS256' },
+		async function (err, user) {
+			if (err) {
+				next(new RestError(err.message, 403));
+			} else {
+				req.user = user;
+				email = user.email;
+				const newUser = await User.findOne({ email });
+				if ('admin' != newUser.role) {
+					return res.status(401).send('Usuario Invalido');
+				}
+				next();
 			}
-			next();
 		}
-	});
+	);
 };
 
 module.exports = verifyAdminToken;

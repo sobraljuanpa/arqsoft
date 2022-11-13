@@ -1,18 +1,18 @@
 {
-  "name": "general-logs-subscriber",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
+	"name": "general-logs-subscriber",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
 		"start": "node index.js",
 		"dev": "nodemon -L -P 2000 index.js"
 	},
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "nodemon": "^2.0.4",
-    "express": "^4.18.2",
-    "mongoose": "6.6.4",
-    "redis": "^4.4.0"
-  }
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"nodemon": "^2.0.4",
+		"express": "^4.18.2",
+		"mongoose": "6.6.4",
+		"redis": "^4.4.0"
+	}
 }
