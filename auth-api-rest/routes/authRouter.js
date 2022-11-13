@@ -59,8 +59,8 @@ router.post('/register', async (req, res) => {
 			role: role,
 		});
 		// TODO: Evaluar si esto es necesario, me parece que no. Que haga login siempre.
-		const PRIVATE_KEY = fs.readFileSync('./private.key', 'utf8');
-		const token = jwt.sign(JSON.stringify(doc), PRIVATE_KEY, {
+		const PRIVATE_KEY = fs.readFileSync('./keys/private.key', 'utf8');
+		const token = jwt.sign(JSON.stringify(user), PRIVATE_KEY, {
 			algorithm: 'RS256',
 		});
 		// save user token

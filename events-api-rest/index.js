@@ -32,8 +32,7 @@ async function logRequest (req, res, next) {
             'body': req.body,
             'statusCode': this.statusCode,
             'timetaken': diff,
-            'timestamp': inboundTimestamp.toUTCString(),
-            'email': req.user.email
+            'timestamp': inboundTimestamp.toUTCString()
         }));
     });
     next();
@@ -46,6 +45,7 @@ async function logEventPublishing (req, res, next) {
             let eventId = req.originalUrl.split('/').pop();
             await publisher.publish('eventPublishing', JSON.stringify({
                 'eventId': eventId,
+                'publisher': req.user.email,
                 'timestamp': timestamp
             }));
         }
@@ -61,6 +61,7 @@ async function logEventUpdate (req, res, next) {
             await publisher.publish('eventUpdate', JSON.stringify({
                 'eventId': eventId,
                 'body': req.body,
+                'updater': req.user.email,
                 'timestamp': timestamp
             }));
         }

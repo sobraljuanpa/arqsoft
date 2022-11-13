@@ -26,13 +26,13 @@ subscriber.subscribe('request', async (message) => {
 
 subscriber.subscribe('eventPublishing', async (message) => {
   let messageObject = JSON.parse(message);
-  let event = new EventPublishingLog(({eventId, timestamp} = messageObject));
+  let event = new EventPublishingLog(({eventId, publisher, timestamp} = messageObject));
   await event.save();
 });
 
 subscriber.subscribe('eventUpdate', async (message) => {
   let messageObject = JSON.parse(message);
-  let event = new EventUpdateLog(({eventId, body, timestamp} = messageObject));
+  let event = new EventUpdateLog(({eventId, body, updater, timestamp} = messageObject));
   await event.save();
 });
 

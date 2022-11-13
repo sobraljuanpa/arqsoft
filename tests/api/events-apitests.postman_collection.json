@@ -7,12 +7,31 @@
 	"item": [
 		{
 			"name": "Create user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"const responseData = pm.response.json();\r",
+							"\r",
+							"pm.collectionVariables.set(\"adminUserEmail\", responseData.email);\r",
+							"pm.collectionVariables.set(\"adminUserPassword\", responseData.password);\r",
+							"pm.collectionVariables.set(\"adminUserToken\", responseData.token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"first_name\": \"admin\",\r\n    \"last_name\": \"admin\",\r\n    \"email\": \"admin\",\r\n    \"password\": \"admin\",\r\n    \"role\": \"admin\"\r\n}",
+					"raw": "{\r\n    \"first_name\": \"admin\",\r\n    \"last_name\": \"admin\",\r\n    \"email\": \"admin5\",\r\n    \"password\": \"admin5\",\r\n    \"role\": \"admin\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -33,12 +52,29 @@
 		},
 		{
 			"name": "Authenticate user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"const responseData = pm.response.json();\r",
+							"\r",
+							"pm.collectionVariables.set(\"adminUserToken\", responseData.token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"email\": \"admin\",\r\n    \"password\": \"admin\"\r\n}",
+					"raw": "{\r\n    \"email\": \"{{adminUserEmail}}\",\r\n    \"password\": \"{{adminUserPassword}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -81,7 +117,13 @@
 			],
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{adminUserToken}}",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\r\n  \"name\": \"Buenos muchachos en la trastienda\",\r\n  \"description\": \"tocan los buenos\",\r\n  \"startDate\": \"2022-10-06\",\r\n  \"endDate\": \"2022-10-06\",\r\n  \"country\": \"Uruguay\",\r\n  \"city\": \"Montevideo\"\r\n}",
@@ -202,7 +244,13 @@
 			],
 			"request": {
 				"method": "PUT",
-				"header": [],
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{adminUserToken}}",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\r\n    \"name\": \"Prueba modificacion\",\r\n    \"description\": \"Probando otro campo\"\r\n}",
@@ -246,7 +294,13 @@
 			],
 			"request": {
 				"method": "PATCH",
-				"header": [],
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{adminUserToken}}",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\r\n    \"enabled\": \"true\"\r\n}",
@@ -305,6 +359,18 @@
 			"key": "authBaseURL",
 			"value": "http://localhost:3002",
 			"type": "default"
+		},
+		{
+			"key": "adminUserEmail",
+			"value": ""
+		},
+		{
+			"key": "adminUserPassword",
+			"value": ""
+		},
+		{
+			"key": "adminUserToken",
+			"value": ""
 		}
 	]
 }

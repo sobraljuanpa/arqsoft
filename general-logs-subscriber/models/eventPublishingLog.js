@@ -5,6 +5,10 @@ const eventPublishingLogSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    publisher: {
+        type: String,
+        required: true
+    },
     timestamp: {
         type: Date,
         required: true

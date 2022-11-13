@@ -9,6 +9,10 @@ const eventUpdateLogSchema = new mongoose.Schema({
         type: Object,
         required: false
     },
+    updater: {
+        type: String,
+        required: true
+    },
     timestamp: {
         type: Date,
         required: true
