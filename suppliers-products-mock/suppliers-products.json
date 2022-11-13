@@ -15,7 +15,7 @@
       "responses": [
         {
           "uuid": "e36888a1-8b71-4fd6-a4b9-18fdbad81889",
-          "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"3 Partidos\",\n    \"description\": \"Viaja a los tres partidos de uruguay en qatar\",\n    \"cost\": 10000,\n    \"informationUrl\": \"\",\n    \"eventId\": 1,\n    \"validityDate\": \"2020/11/30\",\n    \"stock\": 15\n  },\n  {\n    \"id\": 2,\n    \"name\": \"2 Partidos\",\n    \"description\": \"Viaja a los dos partidos de uruguay en qatar\",\n    \"cost\": 8000,\n    \"informationUrl\": \"\",\n    \"eventId\": 1,\n    \"validityDate\": \"2020/11/30\",\n    \"stock\": 15\n  },\n  {\n    \"id\": 3,\n    \"name\": \"1 Partidos\",\n    \"description\": \"Viaja al partido de uruguay en qatar\",\n    \"cost\": 4000,\n    \"informationUrl\": \"\",\n    \"eventId\": 1,\n    \"validityDate\": \"2020/11/30\",\n    \"stock\": 15\n  }\n]",
+          "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"3 Partidos\",\n    \"description\": \"Viaja a los tres partidos de uruguay en qatar\",\n    \"cost\": 10000,\n    \"informationUrl\": \"\",\n    \"eventId\": 1,\n    \"validityDate\": \"2020/11/30\",\n    \"stock\": 15,\n    \"supplierEmail\": \"fede1@fede.com\"\n  },\n  {\n    \"id\": 2,\n    \"name\": \"2 Partidos\",\n    \"description\": \"Viaja a los dos partidos de uruguay en qatar\",\n    \"cost\": 8000,\n    \"informationUrl\": \"\",\n    \"eventId\": 2,\n    \"validityDate\": \"2020/11/30\",\n    \"stock\": 15,\n    \"supplierEmail\": \"fede1@fede.com\"\n  },\n  {\n    \"id\": 3,\n    \"name\": \"1 Partidos\",\n    \"description\": \"Viaja al partido de uruguay en qatar\",\n    \"cost\": 4000,\n    \"informationUrl\": \"\",\n    \"eventId\": 3,\n    \"validityDate\": \"2020/11/30\",\n    \"stock\": 15,\n    \"supplierEmail\": \"fede1@fede.com\"\n  }\n]",
           "latency": 0,
           "statusCode": 200,
           "label": "Success",
@@ -55,7 +55,7 @@
         }
       ],
       "enabled": true,
-      "responseMode": "SEQUENTIAL"
+      "responseMode": null
     }
   ],
   "proxyMode": false,
