@@ -32,7 +32,8 @@ async function logRequest (req, res, next) {
             'body': req.body,
             'statusCode': this.statusCode,
             'timetaken': diff,
-            'timestamp': inboundTimestamp.toUTCString()
+            'timestamp': inboundTimestamp.toUTCString(),
+            'email': req.user.email
         }));
     });
     next();
