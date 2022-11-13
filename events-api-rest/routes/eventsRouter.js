@@ -4,15 +4,7 @@ const mongoose = require('mongoose');
 const Event = mongoose.model('Event');
 const router = express.Router();
 const auth = require('./middleware/authorization');
-var jwt = require('jsonwebtoken');
-const User = mongoose.model('User');
-const RedisClient = require('../cache/cacheManager');
-const {
-	getAllIntegrationURLs,
-	getAllProducts,
-	setCachedProductsByEvent,
-	getCachedEventProducts,
-} = require('../services/productsService');
+const { getProductsByEvent } = require('../services/productsService');
 
 class RestError extends Error {
 	constructor(message, status) {
@@ -114,10 +106,9 @@ router.patch('/events/:id', async (req, res) => {
 router.get('/eventsProducts/:eventId', async (req, res) => {
 	try {
 		const eventId = req.params.eventId;
-		console.log(eventId);
 
-		const eventProducts = await RedisClient.get(`eventsProducts?${eventId}`);
-		res.status(200).send(JSON.parse(eventProducts));
+		const eventProducts = await getProductsByEvent(eventId, false);
+		res.status(200).send(eventProducts);
 	} catch (error) {
 		return res.status(500).send({ error: error.message });
 	}

@@ -7,7 +7,8 @@ const bodyParser = require('body-parser');
 const RedisClient = require('./cache/cacheManager');
 const {
 	getAllProducts,
-	setCachedProductsByEvent,
+	separateProductsByEvents,
+	updateProductsCache,
 } = require('./services/productsService');
 
 const eventsRoutes = require('./routes/eventsRouter');
@@ -30,8 +31,14 @@ async function main() {
 		console.log(`Listening on port ${port}`);
 	});
 
-	const products = await getAllProducts();
-	console.log('Getting all products suceed');
-	await setCachedProductsByEvent(products);
-	console.log('Caching all products suceed');
+	try {
+		const products = await getAllProducts();
+		console.log('Getting all products suceed');
+		const productsByEvent = separateProductsByEvents(products);
+		await updateProductsCache(productsByEvent);
+		console.log('Caching all products suceed');
+	} catch (error) {
+		console.log('Error caching products');
+		console.log(error);
+	}
 }

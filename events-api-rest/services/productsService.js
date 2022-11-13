@@ -1,10 +1,8 @@
-// TODO: Ver si esto va aca.
 const mongoose = require('mongoose');
 const Supplier = mongoose.model('Supplier');
 const axios = require('axios');
 const RedisClient = require('../cache/cacheManager');
 
-// Working like a charm
 const getAllIntegrationURLs = async () => {
 	try {
 		const suppliers = await Supplier.find().lean();
@@ -18,18 +16,21 @@ const getAllIntegrationURLs = async () => {
 	}
 };
 
-// Working like a charm
+/**
+ * Gets all products of the suppliers registered on the system.
+ * @returns Products sorted by eventId descending.
+ */
 const getAllProducts = async () => {
 	let products = [];
 	integrationURLs = await getAllIntegrationURLs();
 	for (const integrationURL of integrationURLs) {
 		const supplierProducts = await getSupplierProducts(integrationURL);
+		// The operator spread (...) returns the element of an array/object.
 		products.push(...supplierProducts);
 	}
 	return sortProductsByEvent(products);
 };
 
-// Working like a charm
 const getSupplierProducts = async (integrationUrl) => {
 	try {
 		const supplierProductsUrl = `${integrationUrl}/products`;
@@ -40,7 +41,6 @@ const getSupplierProducts = async (integrationUrl) => {
 	}
 };
 
-// Working like a charm
 const sortProductsByEvent = (products) => {
 	const sortedProducts = products.sort((a, b) => {
 		return a.eventId - b.eventId;
@@ -48,18 +48,17 @@ const sortProductsByEvent = (products) => {
 	return sortedProducts;
 };
 
-// The products received must be sorted by eventId descending.
-const setCachedProductsByEvent = async (products) => {
+// Deprecated.
+const setAllCachedProductsByEvent = async (products) => {
 	try {
 		// If there are products we set the initial eventId
 		let eventId = products ? products[0].eventId : '';
 		let eventProducts = [];
 		for (product of products) {
 			// If the eventId is different, this product is the first on the list so we set the previous event products.
-			// TODO: Creo que el ultimo evento no estaria quedando
 			if (product.eventId != eventId) {
 				await RedisClient.set(
-					`eventsProducts?${eventId}`,
+					`eventProducts?${eventId}`,
 					JSON.stringify(eventProducts)
 				);
 				eventId = product.eventId;
@@ -67,53 +66,93 @@ const setCachedProductsByEvent = async (products) => {
 			}
 			eventProducts.push(product);
 		}
+		// This is for the last event.
+		await RedisClient.set(
+			`eventProducts?${eventId}`,
+			JSON.stringify(eventProducts)
+		);
 	} catch (error) {
 		console.log(error);
 	}
 };
 
-const setCachedEventProducts = async (eventId, products) => {
-	// Me debo conectar cada vez?
-	try {
+// The format of the products will be [ {eventId: [products]}, {eventId: [products]} ]
+const updateProductsCache = async (productsByEvent) => {
+	for (products of productsByEvent) {
+		// First we obtain the eventId
+		const eventId = Object.keys(products)[0];
+		// Then we obtain the products for that event
+		const eventProducts = products[eventId];
+		// We set the products on redis.
 		await RedisClient.set(
-			`eventsProducts?${eventId}`,
-			JSON.stringify(products)
+			`eventProducts?${eventId}`,
+			JSON.stringify(eventProducts)
 		);
-	} catch (err) {
-		console.log(err);
 	}
 };
 
-const getCachedEventProducts = async (eventId) => {
+// The products received must be sorted by eventId descending.
+const separateProductsByEvents = (products) => {
 	try {
-		console.log("Event id on function: ", eventId)
-		const cacheKey = `eventsProducts?${eventId}`;
-		const products = await RedisClient.get(cacheKey);
-		return JSON.parse(products);
+		// If there are products we set the initial eventId
+		if (products) {
+			let productsByEvents = [];
+
+			let eventId = products[0].eventId;
+			let productsByEvent = [];
+			for (product of products) {
+				// If the eventId is different, this product is the first on the list so we set the previous event products.
+				if (product.eventId != eventId) {
+					// The object will be [ {eventId: [products]}, {eventId: [products]} ]
+					productsByEvents = [
+						...productsByEvents,
+						{ [eventId]: productsByEvent },
+					];
+					eventId = product.eventId;
+					productsByEvent = [];
+				}
+				productsByEvent.push(product);
+			}
+			// This is for the last event.
+			productsByEvents = [...productsByEvents, { [eventId]: productsByEvent }];
+			return productsByEvents;
+		} else {
+			return [];
+		}
+	} catch (error) {
+		console.log(error);
+	}
+};
+
+const getProductsByEvent = async (eventId) => {
+	try {
+		const cachedProducts = await RedisClient.get(`eventProducts?${eventId}`);
+		if (cachedProducts) {
+			eventProducts = JSON.parse(cachedProducts);
+			return eventProducts;
+		} else {
+			const products = await getAllProducts();
+			const productsByEvent = separateProductsByEvents(products);
+
+			// Update the cache.
+			productsByEvent.length > 0 ?? updateProductsCache(productsByEvent);
+
+			eventProducts = productsByEvent[eventId - 1][eventId];
+
+			// The object will be [ {eventId: [products]}, {eventId: [products]} ]
+			// [eventId - 1] is for the position on the array that is -1 because it start on 0.
+			// [eventId] is for getting the products for the eventId.
+			return eventProducts;
+		}
 	} catch (err) {
 		console.log(err);
 	}
 };
-
-const main = async () => {
-	getAllProducts();
-	const products = await getCachedEventProducts(1);
-	//   products = products.filter((product) => {
-	//     return product.eventId === 1;
-	//   });
-	console.log(products);
-	//   console.log(
-	//     products.filter((product) => {
-	//       return product.eventId === 1;
-	//     })
-	//   );
-};
-
-// main();
 
 module.exports = {
 	getAllIntegrationURLs,
 	getAllProducts,
-	setCachedProductsByEvent,
-	getCachedEventProducts,
+	getProductsByEvent,
+	separateProductsByEvents,
+	updateProductsCache
 };
