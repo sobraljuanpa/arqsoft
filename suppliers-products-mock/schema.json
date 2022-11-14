@@ -81,6 +81,9 @@
             },
             "supplierEmail": {
               "type": "string"
+            },
+            "country": {
+              "type": "string"
             }
           }
         },

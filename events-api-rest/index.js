@@ -6,10 +6,10 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const RedisClient = require('./cache/cacheManager');
 const {
-	getAllProducts,
-	separateProductsByEvents,
-	updateProductsCache,
+	updateAllProductsCache
 } = require('./services/productsService');
+
+const CACHE_UPDATE_TIME = '300000'
 
 const eventsRoutes = require('./routes/eventsRouter');
 const app = express();
@@ -31,14 +31,13 @@ async function main() {
 		console.log(`Listening on port ${port}`);
 	});
 
-	try {
-		const products = await getAllProducts();
-		console.log('Getting all products suceed');
-		const productsByEvent = separateProductsByEvents(products);
-		await updateProductsCache(productsByEvent);
-		console.log('Caching all products suceed');
-	} catch (error) {
-		console.log('Error caching products');
-		console.log(error);
-	}
+	updateAllProductsCache();
+	setInterval(async () => {
+		try {
+			updateAllProductsCache();
+		} catch (error) {
+			console.log('Error caching products');
+			console.log(error);
+		}
+	}, CACHE_UPDATE_TIME)
 }

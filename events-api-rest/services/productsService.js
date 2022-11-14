@@ -48,36 +48,8 @@ const sortProductsByEvent = (products) => {
 	return sortedProducts;
 };
 
-// Deprecated.
-const setAllCachedProductsByEvent = async (products) => {
-	try {
-		// If there are products we set the initial eventId
-		let eventId = products ? products[0].eventId : '';
-		let eventProducts = [];
-		for (product of products) {
-			// If the eventId is different, this product is the first on the list so we set the previous event products.
-			if (product.eventId != eventId) {
-				await RedisClient.set(
-					`eventProducts?${eventId}`,
-					JSON.stringify(eventProducts)
-				);
-				eventId = product.eventId;
-				eventProducts = [];
-			}
-			eventProducts.push(product);
-		}
-		// This is for the last event.
-		await RedisClient.set(
-			`eventProducts?${eventId}`,
-			JSON.stringify(eventProducts)
-		);
-	} catch (error) {
-		console.log(error);
-	}
-};
-
 // The format of the products will be [ {eventId: [products]}, {eventId: [products]} ]
-const updateProductsCache = async (productsByEvent) => {
+const setProductsCache = async (productsByEvent) => {
 	for (products of productsByEvent) {
 		// First we obtain the eventId
 		const eventId = Object.keys(products)[0];
@@ -124,20 +96,22 @@ const separateProductsByEvents = (products) => {
 	}
 };
 
-const getProductsByEvent = async (eventId) => {
+const getProductsByEvent = async (eventId, country) => {
 	try {
 		const cachedProducts = await RedisClient.get(`eventProducts?${eventId}`);
 		if (cachedProducts) {
 			eventProducts = JSON.parse(cachedProducts);
+			eventProducts = productsListAlgorithm(eventProducts, country);
 			return eventProducts;
 		} else {
 			const products = await getAllProducts();
 			const productsByEvent = separateProductsByEvents(products);
 
 			// Update the cache.
-			productsByEvent.length > 0 ?? updateProductsCache(productsByEvent);
+			productsByEvent.length > 0 ?? setProductsCache(productsByEvent);
 
 			eventProducts = productsByEvent[eventId - 1][eventId];
+			eventProducts = productsListAlgorithm(eventProducts, country);
 
 			// The object will be [ {eventId: [products]}, {eventId: [products]} ]
 			// [eventId - 1] is for the position on the array that is -1 because it start on 0.
@@ -149,10 +123,38 @@ const getProductsByEvent = async (eventId) => {
 	}
 };
 
+const productsListAlgorithm = (products, country) => {
+	if (products) {
+		const firstProduct = products[0];
+		let previousSupplierEmail = firstProduct.supplierEmail;
+		const productsFromDifferentSupplier = [];
+		products.forEach((product) => {
+			if (
+				product.supplierEmail != previousSupplierEmail &&
+				product.country === country
+			) {
+				previousSupplierEmail = product.supplierEmail;
+				productsFromDifferentSupplier.push(product);
+			}
+		});
+		return productsFromDifferentSupplier.slice(0, 5);
+	} else {
+		return [];
+	}
+};
+
+const updateAllProductsCache = async () => {
+	console.log('Updating cache products');
+	const products = await getAllProducts();
+	const productsByEvent = separateProductsByEvents(products);
+	await setProductsCache(productsByEvent);
+};
+
 module.exports = {
 	getAllIntegrationURLs,
 	getAllProducts,
 	getProductsByEvent,
 	separateProductsByEvents,
-	updateProductsCache
+	updateProductsCache: setProductsCache,
+	updateAllProductsCache
 };

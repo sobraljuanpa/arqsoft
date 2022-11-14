@@ -107,7 +107,7 @@ router.get('/eventsProducts/:eventId', async (req, res) => {
 	try {
 		const eventId = req.params.eventId;
 
-		const eventProducts = await getProductsByEvent(eventId, false);
+		const eventProducts = await getProductsByEvent(eventId, "Uruguay");
 		res.status(200).send(eventProducts);
 	} catch (error) {
 		return res.status(500).send({ error: error.message });
