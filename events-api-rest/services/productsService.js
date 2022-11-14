@@ -127,7 +127,7 @@ const productsListAlgorithm = (products, country) => {
 	if (products) {
 		const firstProduct = products[0];
 		let previousSupplierEmail = firstProduct.supplierEmail;
-		const productsFromDifferentSupplier = [];
+		const productsFromDifferentSupplier = [firstProduct];
 		products.forEach((product) => {
 			if (
 				product.supplierEmail != previousSupplierEmail &&
@@ -150,11 +150,35 @@ const updateAllProductsCache = async () => {
 	await setProductsCache(productsByEvent);
 };
 
+// Require some testing.
+const updateSpecificProductCache = async (product) => {
+	try {
+		const eventId = product.eventId
+		const cachedProducts = await RedisClient.get(
+			`eventProducts?${eventId}`
+		);
+		if (cachedProducts) {
+			eventProducts = JSON.parse(cachedProducts);
+			// Returns a new array, iterates over all objects to find the same id and then update it.
+			const updatedEventProducts = eventProducts.map(
+				(oldProd) =>
+					[product].find((newProd) => newProd.id === oldProd.id) || oldProd
+			);
+			await RedisClient.set(
+				`eventProducts?${eventId}`,
+				JSON.stringify(updatedEventProducts)
+			);
+		}
+	} catch (error) {
+		console.log(error);
+	}
+};
+
 module.exports = {
 	getAllIntegrationURLs,
 	getAllProducts,
 	getProductsByEvent,
 	separateProductsByEvents,
 	updateProductsCache: setProductsCache,
-	updateAllProductsCache
+	updateAllProductsCache,
 };
