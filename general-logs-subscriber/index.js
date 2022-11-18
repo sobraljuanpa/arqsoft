@@ -6,6 +6,8 @@ require('./models/eventUpdateLog');
 const RequestLog = mongoose.model('RequestLog');
 const EventPublishingLog = mongoose.model('EventPublishingLog');
 const EventUpdateLog = mongoose.model('EventUpdateLog');
+require('./middleware/models/userModel');
+const authMiddleware = require('./middleware/auth/authorization');
 
 // Redis
 const redis = require('redis');
@@ -44,6 +46,7 @@ subscriber.subscribe('eventUpdate', async (message) => {
 
 // Express
 const app = express();
+app.use(authMiddleware.verifyProviderToken);
 // Todavia falta los endpoints para consultar logs
 app.get('/', (req, res) => {
 	res.send('Subscriber One');

@@ -67,6 +67,8 @@ services:
       - sa-network
     volumes:
       - ./general-logs-subscriber/:/app
+      - ./middleware:/app/middleware
+      - ./auth-api-rest/keys:/app/keys
 
 networks:
   sa-network:
