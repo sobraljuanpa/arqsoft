@@ -1,5 +1,4 @@
 require('./models/eventModel');
-require('./models/userModel');
 const redis = require('redis');
 const express = require('express');
 const mongoose = require('mongoose');
