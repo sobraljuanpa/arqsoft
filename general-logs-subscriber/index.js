@@ -56,7 +56,7 @@ async function main() {
 		.connect('mongodb://mongo:27017/test')
 		.then(() => console.log('Connected to mongo instance'));
 
-	app.listen(3003, () => {
-		console.log('server is listening to port 3003');
+	app.listen(3004, () => {
+		console.log('server is listening to port 3004');
 	});
 }
