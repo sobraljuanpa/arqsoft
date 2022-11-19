@@ -57,6 +57,7 @@ services:
       - sa-network
     volumes:
       - ./auth-api-rest/:/app
+      - ./middleware:/app/middleware
   general-logs-subscriber:
     restart: on-failure
     build: general-logs-subscriber/.

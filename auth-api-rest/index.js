@@ -5,8 +5,10 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = 3002;
 const authRoutes = require('./routes/authRouter');
+const activityMiddleware = require('./middleware/logs/activity');
 
 app.use(bodyParser.json());
+app.use(activityMiddleware.logActivity);
 app.use(authRoutes);
 
 main().catch((err) => console.log(err));

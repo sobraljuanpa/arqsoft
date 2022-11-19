@@ -25,6 +25,7 @@ const verifyAdminToken = async (req, res, next) => {
 			if (err) {
 				next(new RestError(err.message, 403));
 			} else {
+				// hacer nullchecks, tire un token con un email sin usuario registrado y me tiro el servicio
 				req.user = user;
 				email = user.email;
 				const newUser = await User.findOne({ email });

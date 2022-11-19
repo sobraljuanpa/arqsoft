@@ -5,6 +5,8 @@ const router = express.Router();
 var jwt = require('jsonwebtoken');
 const User = mongoose.model('User');
 
+// este endpoint se usa para algo? lo queremos?
+// si no se usa para nada puedo agregar el middleware de loggeo a todas las reqs de este endpoint nomas
 router.post('/auth', async (req, res) => {
 	const token = req.headers['authorization'];
 
