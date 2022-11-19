@@ -62,7 +62,15 @@ router.get('/activity', authMiddleware.verifyAdminToken, async (req, res) => {
 	}
 });
 // endpoint actividad por mail de usuario
-
+router.get('/activity/:actorId', authMiddleware.verifyAdminToken, async (req, res) => {
+	try {
+		const id = req.params.actorId;
+		let requests = await RequestLog.find({ actor: id}).lean();
+		res.status(200).send(requests);
+	} catch (error) {
+		return res.status(500).send({ error: error.message });
+	}
+});
 // REQ 15
 // endpoint registro
 // endpoint logines
