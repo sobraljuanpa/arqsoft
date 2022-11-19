@@ -56,29 +56,28 @@ services:
       - sa-network
     volumes:
       - ./auth-api-rest/:/app
-  transactions-api-rest:
-    restart: on-failure
-    build: transactions-api-rest/.
-    depends_on:
-      - mongo
-    ports:
-      - "3003:3003"
-    networks:
-      - sa-network
-    volumes:
-      - ./transactions-api-rest/:/app
   general-logs-subscriber:
     restart: on-failure
     build: general-logs-subscriber/.
     depends_on:
       - redis
     ports:
-      - "3004:3004"
+      - "3003:3003"
     networks:
       - sa-network
     volumes:
       - ./general-logs-subscriber/:/app
-
+  transactions-api-rest:
+    restart: on-failure
+    build: transactions-api-rest/.
+    depends_on:
+      - mongo
+    ports:
+      - "3004:3004"
+    networks:
+      - sa-network
+    volumes:
+      - ./transactions-api-rest/:/app
 networks:
   sa-network:
     name: sa-network

@@ -2,6 +2,6 @@ FROM node:latest
 
 WORKDIR /app
 COPY . .
-EXPOSE 3003
+EXPOSE 3004
 
 CMD [ "npm", "run", "dev" ]
