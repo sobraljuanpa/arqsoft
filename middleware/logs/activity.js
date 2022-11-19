@@ -8,6 +8,7 @@ const publisher = redis.createClient({
 publisher.connect();
 
 const logActivity = async (req, res, next) => {
+	// agregar que si hay token se loguee
     let inboundTimestamp = new Date();
 	res.on('finish', async function () {
 		let outboundTimestamp = new Date();
@@ -21,7 +22,8 @@ const logActivity = async (req, res, next) => {
 				body: req.body,
 				statusCode: this.statusCode,
 				timetaken: diff,
-				timestamp: inboundTimestamp.toUTCString(),
+				inboundTimestamp: inboundTimestamp.toUTCString(),
+				outboundTimestamp: outboundTimestamp.toUTCString()
 			})
 		);
 	});

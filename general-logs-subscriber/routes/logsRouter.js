@@ -61,11 +61,14 @@ router.get('/activity', authMiddleware.verifyAdminToken, async (req, res) => {
 		return res.status(500).send({ error: error.message });
 	}
 });
-// endpoint actividad por usuarios/con usuarios autenticados
+// endpoint actividad por mail de usuario
 
 // REQ 15
 // endpoint registro
 // endpoint logines
+// endpoint accesos no autorizados
+	//401
+	//403
 
 
 module.exports = router;
