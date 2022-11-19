@@ -22,7 +22,7 @@ subscriber.connect();
 subscriber.subscribe('request', async (message) => {
 	let messageObject = JSON.parse(message);
 	let request = new RequestLog(
-		({ method, url, body, statusCode, timetaken, inboundTimestamp, outboundTimestamp } = messageObject)
+		({ method, url, body, statusCode, actor, timetaken, inboundTimestamp, outboundTimestamp } = messageObject)
 	);
 	await request.save();
 });

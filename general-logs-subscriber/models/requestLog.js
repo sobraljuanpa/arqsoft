@@ -17,6 +17,10 @@ const requestLogSchema = new mongoose.Schema({
 		type: Number,
 		required: true,
 	},
+	actor: {
+		type: String,
+		required: false,
+	},
 	timetaken: {
 		//ms
 		type: Number,
