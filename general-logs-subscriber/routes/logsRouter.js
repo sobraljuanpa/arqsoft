@@ -65,7 +65,7 @@ router.get('/activity', authMiddleware.verifyAdminToken, async (req, res) => {
 router.get('/activity/:actorId', authMiddleware.verifyAdminToken, async (req, res) => {
 	try {
 		const id = req.params.actorId;
-		let requests = await RequestLog.find({ actor: id}).lean();
+		let requests = await RequestLog.find({ actor: id }).lean();
 		res.status(200).send(requests);
 	} catch (error) {
 		return res.status(500).send({ error: error.message });
@@ -73,7 +73,23 @@ router.get('/activity/:actorId', authMiddleware.verifyAdminToken, async (req, re
 });
 // REQ 15
 // endpoint registro
+router.get('/audit/registrations', authMiddleware.verifyAdminToken, async (req, res) => {
+	try {
+		let requests = await RequestLog.find({ url: '/register' }).lean();
+		res.status(200).send(requests);
+	} catch (error) {
+		return res.status(500).send({ error: error.message });
+	}
+});
 // endpoint logines
+router.get('/audit/logins', authMiddleware.verifyAdminToken, async (req, res) => {
+	try {
+		let requests = await RequestLog.find({ url: '/login' }).lean();
+		res.status(200).send(requests);
+	} catch (error) {
+		return res.status(500).send({ error: error.message });
+	}
+});
 // endpoint accesos no autorizados
 	//401
 	//403

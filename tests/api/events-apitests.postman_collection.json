@@ -671,6 +671,54 @@
 					"response": []
 				},
 				{
+					"name": "Get Login Audit Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/audit/logins",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"audit",
+								"logins"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Registration Audit Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/audit/registrations",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"audit",
+								"registrations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get Activity Logs by User",
 					"request": {
 						"method": "GET",
