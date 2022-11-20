@@ -791,6 +791,39 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Purchases",
+			"item": [
+				{
+					"name": "test",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\":\"juan@juan.juan\",\r\n    \"ci\":\"48344082\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3004/validationsTest",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3004",
+							"path": [
+								"validationsTest"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [

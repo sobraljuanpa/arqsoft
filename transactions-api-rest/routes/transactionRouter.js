@@ -6,20 +6,36 @@ const router = express.Router();
 var jwt = require('jsonwebtoken');
 const Transaction = mongoose.model('Transaction');
 const sessionValidator = require('../middleware/sessionValidator');
+const ciValidator = require('ciuy');
 const Pipeline = require('pipes-and-filters');
 const axios = require('axios');
 
 const pipeline = Pipeline.create('Transaction validations');
 
-const validate_mail = function (input, next) {};
+const validate_mail = function(input, next){
+	const regex = /\S+@\S+\.\S+/;
+	if (regex.test(input.email)) {
+		next(null, input);
+	} else {
+		return next(Error('Invalid email address'));
+	}
+};
 
-const validate_CI = function (input, next) {};
+const validate_CI = function(input, next){
+	if (ciValidator.validateIdentificationNumber(input.ci)) {
+		next(null, input);
+	} else {
+		return next(Error('Invalid CI'));
+	}
+};
 
-const validate_stock = function (input, next) {};
+const validate_stock = function(input, next){
+	//hay que validar stock, mismo formato que las anteriores
+};
 
 pipeline.use(validate_mail);
 pipeline.use(validate_CI);
-pipeline.use(validate_stock);
+//pipeline.use(validate_stock);
 
 router.post('/transaction', async (req, res) => {
 	// our transaction logic goes here...
@@ -80,7 +96,25 @@ router.post('/buy', queueMw, async (req, res) => {
 	}
 });
 
-// router.put('/transaction/:id', async (req, res) => {
-// });
+router.post('/purchase', sessionValidator, async (req, res) => {
+	//que venga en el body ademas de lo por letra, providerId y productId
+	// validar body completo
+		// pasar por el pipe
+});
+
+router.post('/validationsTest', (req, res) => {
+	pipeline.execute(req.body, function(err, result) {
+		if (err) {
+			console.log(err.message);
+			res.status(400).send(err.message);
+		} else {
+			res.status(200).send('Validado con exito');
+		}
+	});
+	
+});
+
+router.get('/transaction/:id', async (req, res) => {
+});
 
 module.exports = router;
