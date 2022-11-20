@@ -2,7 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Event = mongoose.model('Event');
 const router = express.Router();
-const auth = require('./middleware/authorization');
+require('../middleware/models/userModel');
+const authMiddleware = require('../middleware/auth/authorization');
+const { getProductsByEvent } = require('../services/productsService');
 
 class RestError extends Error {
 	constructor(message, status) {
@@ -20,7 +22,7 @@ router.get('/events', async (req, res) => {
 	}
 });
 
-router.post('/events', auth, async (req, res) => {
+router.post('/events', authMiddleware.verifyAdminToken, async (req, res) => {
 	let event = new Event(
 		({ name, description, startDate, endDate, country, city } = req.body)
 	);
@@ -88,7 +90,7 @@ function getEnabledModifiedEventFields(request) {
 }
 
 // Put para modificacion de todos los campos menos creator y enabled
-router.put('/events/:id', auth, async (req, res) => {
+router.put('/events/:id', authMiddleware.verifyAdminToken, async (req, res) => {
 	// tendria que tener un try catch y levantar un 500 en el catch nomas
 	if (req.body.enabled) {
 		res
@@ -130,7 +132,7 @@ async function approvingUserIsNotCreator(eventId, approver) {
 }
 
 // Patch para aprobacion unicamente, facilita el tema de loggeo
-router.patch('/events/:id', auth, async (req, res) => {
+router.patch('/events/:id', authMiddleware.verifyAdminToken, async (req, res) => {
 	const id = req.params.id;
 	let paramsToUpdate = {};
 	if (await approvingUserIsNotCreator(id, req.user.email)) {
@@ -143,6 +145,17 @@ router.patch('/events/:id', auth, async (req, res) => {
 		res
 			.status(400)
 			.send("Event can't be approved by same user that created it");
+	}
+});
+
+router.get('/eventsProducts/:eventId', async (req, res) => {
+	try {
+		const eventId = req.params.eventId;
+
+		const eventProducts = await getProductsByEvent(eventId, "Uruguay");
+		res.status(200).send(eventProducts);
+	} catch (error) {
+		return res.status(500).send({ error: error.message });
 	}
 });
 
