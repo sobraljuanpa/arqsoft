@@ -46,6 +46,8 @@ services:
       - sa-network
     volumes:
       - ./suppliers-api-rest/:/app
+      - ./auth-api-rest/:/app
+      - ./middleware:/app/middleware
   auth-api-rest:
     restart: on-failure
     build: auth-api-rest/.
@@ -56,7 +58,9 @@ services:
     networks:
       - sa-network
     volumes:
+      - ./auth-api-rest/:/app
       - ./events-api-rest/:/app
+      - ./middleware:/app/middleware
   suppliers-products-mock-api-rest:
     container_name: suppliers-products-mock-api-rest
     restart: on-failure
@@ -69,8 +73,6 @@ services:
       - sa-network
     volumes:
       - ./suppliers-products-mock/:/app
-      - ./auth-api-rest/:/app
-      - ./middleware:/app/middleware
   general-logs-subscriber:
     restart: on-failure
     build: general-logs-subscriber/.

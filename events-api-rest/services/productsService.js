@@ -38,7 +38,10 @@ const getAllProducts = async () => {
 
 const getSupplierProducts = async (integrationUrl) => {
 	try {
-		const supplierProductsUrl = integrationUrl.replace(/[\u200B-\u200D\uFEFF]/g, '');
+		const supplierProductsUrl = integrationUrl.replace(
+			/[\u200B-\u200D\uFEFF]/g,
+			''
+		);
 		const response = await axios.get(supplierProductsUrl);
 		return response.data;
 	} catch (err) {
@@ -72,7 +75,7 @@ const setProductsCache = async (productsByEvent) => {
 const separateProductsByEvents = (products) => {
 	try {
 		// If there are products we set the initial eventId
-		if (products) {
+		if (products.length > 0) {
 			let productsByEvents = [];
 
 			let eventId = products[0].eventId;

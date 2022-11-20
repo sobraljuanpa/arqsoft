@@ -17,6 +17,18 @@ const transactionSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	productId: {
+		type: String,
+		required: false,
+	},
+	supplierEmail: {
+		type: String,
+		required: false,
+	},
+	productQuantity: {
+		type: Number,
+		required: false,
+	}
 });
 
 mongoose.model('Transaction', transactionSchema);

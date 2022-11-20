@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 
 const SupplierProducts = [
-	(SupplierProduct = mongoose.model('SupplierProduct')),
+	(SupplierProduct1 = mongoose.model('SupplierProduct1')),
 	(SupplierProduct2 = mongoose.model('SupplierProduct2')),
 	(SupplierProduct3 = mongoose.model('SupplierProduct3')),
 	(SupplierProduct4 = mongoose.model('SupplierProduct4')),
@@ -57,7 +57,7 @@ router.get('/supplier/:id/products', async (req, res) => {
 	}
 });
 
-router.put('/supplier/:id/product/:productId', async (req, res) => {
+router.put('/supplier/:id/products/:productId', async (req, res) => {
 	try {
 		const id = req.params.id - 1;
 		const productId = req.params.productId;

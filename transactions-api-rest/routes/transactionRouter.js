@@ -1,10 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const Transaction = mongoose.model('Transaction');
+const Supplier = mongoose.model('Supplier');
 var expressQueue = require('express-queue');
 const fs = require('fs');
 const router = express.Router();
 var jwt = require('jsonwebtoken');
-const Transaction = mongoose.model('Transaction');
 const sessionValidator = require('../middleware/sessionValidator');
 const ciValidator = require('ciuy');
 const Pipeline = require('pipes-and-filters');
@@ -12,7 +13,7 @@ const axios = require('axios');
 
 const pipeline = Pipeline.create('Transaction validations');
 
-const validate_mail = function(input, next){
+const validate_mail = function (input, next) {
 	const regex = /\S+@\S+\.\S+/;
 	if (regex.test(input.email)) {
 		next(null, input);
@@ -21,7 +22,7 @@ const validate_mail = function(input, next){
 	}
 };
 
-const validate_CI = function(input, next){
+const validate_CI = function (input, next) {
 	if (ciValidator.validateIdentificationNumber(input.ci)) {
 		next(null, input);
 	} else {
@@ -29,7 +30,7 @@ const validate_CI = function(input, next){
 	}
 };
 
-const validate_stock = function(input, next){
+const validate_stock = function (input, next) {
 	//hay que validar stock, mismo formato que las anteriores
 };
 
@@ -99,11 +100,60 @@ router.post('/buy', queueMw, async (req, res) => {
 router.post('/purchase', sessionValidator, async (req, res) => {
 	//que venga en el body ademas de lo por letra, providerId y productId
 	// validar body completo
-		// pasar por el pipe
+	// pasar por el pipe
+
+	/**
+	 * {product: { productId: number, supplierEmail: string, eventId, quantity: number }, email: string, ci:string}
+	 */
+
+	pipeline.execute(req.body, async function (err, result) {
+		if (err) {
+			console.log(err.message);
+			res.status(400).send(err.message);
+		} else {
+			try {
+				const selectedProduct = req.body.product;
+				console.log(selectedProduct);
+				// Find supplier integrationURl
+				const supplier = await Supplier.findOne({
+					email: selectedProduct.supplierEmail,
+				}).exec();
+				console.log(supplier);
+				const updateStockUrl =
+					`${supplier.integrationURL}/${selectedProduct.productId}`.replace(
+						/[\u200B-\u200D\uFEFF]/g,
+						''
+					);
+
+				// Retain stock
+				await axios.put(
+					// 'http://suppliers-products-mock-api-rest:3005/supplier/1/product/637937926c6157f5991e4310',
+					updateStockUrl,
+					{},
+					{ params: { stock: selectedProduct.quantity } }
+				);
+
+				// Get transaction and update status and product info.
+				let updatedTransaction = await Transaction.findOneAndUpdate(
+					req.transaction._id,
+					{
+						status: 'Pendiente de pago',
+						productId: selectedProduct.productId,
+						supplierEmail: selectedProduct.supplierEmail,
+						productQuantity: selectedProduct.quantity,
+					}
+				);
+				res.status(200).send(updatedTransaction);
+			} catch (error) {
+				console.log(error);
+				res.status(400).send(error.message);
+			}
+		}
+	});
 });
 
 router.post('/validationsTest', (req, res) => {
-	pipeline.execute(req.body, function(err, result) {
+	pipeline.execute(req.body, function (err, result) {
 		if (err) {
 			console.log(err.message);
 			res.status(400).send(err.message);
@@ -111,10 +161,8 @@ router.post('/validationsTest', (req, res) => {
 			res.status(200).send('Validado con exito');
 		}
 	});
-	
 });
 
-router.get('/transaction/:id', async (req, res) => {
-});
+router.get('/transaction/:id', async (req, res) => {});
 
 module.exports = router;

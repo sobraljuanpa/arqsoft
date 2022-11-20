@@ -18,7 +18,7 @@ const supplierProductSchema = new mongoose.Schema({
 		type: String,
 	},
 	eventId: {
-		type: Number,
+		type: String,
 		required: true,
 	},
 	validityDate: {
@@ -32,16 +32,14 @@ const supplierProductSchema = new mongoose.Schema({
 	supplierEmail: {
 		type: String,
 		required: true,
-		unique: true,
 	},
 	country: {
 		type: String,
 		required: true,
-		unique: true,
 	}
 });
 
-mongoose.model('SupplierProduct', supplierProductSchema);
+mongoose.model('SupplierProduct1', supplierProductSchema);
 mongoose.model('SupplierProduct2', supplierProductSchema);
 mongoose.model('SupplierProduct3', supplierProductSchema);
 mongoose.model('SupplierProduct4', supplierProductSchema);
