@@ -12,6 +12,13 @@ services:
       - "27017:27017"
     networks:
       - sa-network
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - sa-network
   suppliers-api-rest:
     restart: on-failure
     build: suppliers-api-rest/.

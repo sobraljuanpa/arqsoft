@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Supplier = mongoose.model('Supplier');
 const axios = require('axios');
+const http = require('http');
 const RedisClient = require('../cache/cacheManager');
 
 const getAllIntegrationURLs = async () => {
@@ -21,19 +22,23 @@ const getAllIntegrationURLs = async () => {
  * @returns Products sorted by eventId descending.
  */
 const getAllProducts = async () => {
-	let products = [];
-	integrationURLs = await getAllIntegrationURLs();
-	for (const integrationURL of integrationURLs) {
-		const supplierProducts = await getSupplierProducts(integrationURL);
-		// The operator spread (...) returns the element of an array/object.
-		products.push(...supplierProducts);
+	try {
+		let products = [];
+		integrationURLs = await getAllIntegrationURLs();
+		for (const integrationURL of integrationURLs) {
+			const supplierProducts = await getSupplierProducts(integrationURL);
+			// The operator spread (...) returns the element of an array/object.
+			products.push(...supplierProducts);
+		}
+		return sortProductsByEvent(products);
+	} catch (err) {
+		console.log(err);
 	}
-	return sortProductsByEvent(products);
 };
 
 const getSupplierProducts = async (integrationUrl) => {
 	try {
-		const supplierProductsUrl = `${integrationUrl}/products`;
+		const supplierProductsUrl = integrationUrl.replace(/[\u200B-\u200D\uFEFF]/g, '');
 		const response = await axios.get(supplierProductsUrl);
 		return response.data;
 	} catch (err) {
@@ -153,10 +158,8 @@ const updateAllProductsCache = async () => {
 // Require some testing.
 const updateSpecificProductCache = async (product) => {
 	try {
-		const eventId = product.eventId
-		const cachedProducts = await RedisClient.get(
-			`eventProducts?${eventId}`
-		);
+		const eventId = product.eventId;
+		const cachedProducts = await RedisClient.get(`eventProducts?${eventId}`);
 		if (cachedProducts) {
 			eventProducts = JSON.parse(cachedProducts);
 			// Returns a new array, iterates over all objects to find the same id and then update it.
