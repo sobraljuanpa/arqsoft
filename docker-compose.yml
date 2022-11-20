@@ -56,6 +56,19 @@ services:
     networks:
       - sa-network
     volumes:
+      - ./events-api-rest/:/app
+  suppliers-products-mock-api-rest:
+    container_name: suppliers-products-mock-api-rest
+    restart: on-failure
+    build: suppliers-products-mock/.
+    depends_on:
+      - mongo
+    ports:
+      - "3005:3005"
+    networks:
+      - sa-network
+    volumes:
+      - ./suppliers-products-mock/:/app
       - ./auth-api-rest/:/app
       - ./middleware:/app/middleware
   general-logs-subscriber:

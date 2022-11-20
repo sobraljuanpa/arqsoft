@@ -1,7 +1,15 @@
+require('./models/Supplier');
 require('./models/eventModel');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const RedisClient = require('./cache/cacheManager');
+const {
+	updateAllProductsCache
+} = require('./services/productsService');
+
+const CACHE_UPDATE_TIME = '300000'
+
 const eventsRoutes = require('./routes/eventsRouter');
 const activityMiddleware = require('./middleware/logs/activity');
 const eventsMiddleware = require('./middleware/logs/events');
@@ -22,7 +30,19 @@ async function main() {
 		.connect('mongodb://mongo:27017/test')
 		.then(() => console.log('Connected to mongo instance'));
 
+	await RedisClient.connect();
+
 	app.listen(port, () => {
 		console.log(`Listening on port ${port}`);
 	});
+
+	updateAllProductsCache();
+	setInterval(async () => {
+		try {
+			updateAllProductsCache();
+		} catch (error) {
+			console.log('Error caching products');
+			console.log(error);
+		}
+	}, CACHE_UPDATE_TIME)
 }
