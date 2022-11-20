@@ -1,25 +1,21 @@
 const express = require('express');
 const mongoose = require('mongoose');
+var expressQueue = require('express-queue');
 const fs = require('fs');
 const router = express.Router();
 var jwt = require('jsonwebtoken');
 const Transaction = mongoose.model('Transaction');
 const sessionValidator = require('../middleware/sessionValidator');
 const Pipeline = require('pipes-and-filters');
+const axios = require('axios');
 
 const pipeline = Pipeline.create('Transaction validations');
 
-const validate_mail = function(input, next){
+const validate_mail = function (input, next) {};
 
-};
+const validate_CI = function (input, next) {};
 
-const validate_CI = function(input, next){
-
-};
-
-const validate_stock = function(input, next){
-
-};
+const validate_stock = function (input, next) {};
 
 pipeline.use(validate_mail);
 pipeline.use(validate_CI);
@@ -64,7 +60,24 @@ router.post('/transaction', async (req, res) => {
 });
 
 router.get('/test', sessionValidator, async (req, res) => {
-	res.status(200).send("Done.");
+	res.status(200).send('Done.');
+});
+
+const queueMw = expressQueue({ activeLimit: 1, queuedLimit: 100000 });
+
+// Hacer que sea configurable el limite
+router.post('/buy', queueMw, async (req, res) => {
+	try {
+		const stock = req.query.stock;
+		const product = await axios.put(
+			'http://suppliers-products-mock-api-rest:3005/supplier/1/product/637937926c6157f5991e4310',
+			{},
+			{ params: { stock: stock } }
+		);
+		res.status(200).send('test');
+	} catch (error) {
+		console.log(error);
+	}
 });
 
 // router.put('/transaction/:id', async (req, res) => {

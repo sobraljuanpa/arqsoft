@@ -62,8 +62,8 @@ router.put('/supplier/:id/product/:productId', async (req, res) => {
 		const id = req.params.id - 1;
 		const productId = req.params.productId;
         console.log(productId)
-		const newStock = req.query.stock;
 		let productToUpdate = await SupplierProducts[id].findById(productId).lean();
+		const newStock = productToUpdate.stock - req.query.stock;
 		console.log(productToUpdate);
 		productToUpdate.stock = newStock;
 
@@ -71,7 +71,7 @@ router.put('/supplier/:id/product/:productId', async (req, res) => {
 			productId,
 			productToUpdate
 		);
-		res.status(200).send(updatedProduct);
+		res.status(200).send(productToUpdate);
 	} catch (error) {
 		return res.status(500).send({ error: error.message });
 	}
