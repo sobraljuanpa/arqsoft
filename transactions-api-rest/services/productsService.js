@@ -106,25 +106,29 @@ const separateProductsByEvents = (products) => {
 
 const getProductsByEvent = async (eventId, country) => {
 	try {
+		let eventProducts = [];
 		const cachedProducts = await RedisClient.get(`eventProducts?${eventId}`);
 		if (cachedProducts) {
 			eventProducts = JSON.parse(cachedProducts);
 			eventProducts = productsListAlgorithm(eventProducts, country);
 			return eventProducts;
 		} else {
-			const products = await getAllProducts();
-			const productsByEvent = separateProductsByEvents(products);
+		const products = await getAllProducts();
+		const productsByEvent = separateProductsByEvents(products);
 
-			// Update the cache.
-			productsByEvent.length > 0 ?? setProductsCache(productsByEvent);
+		// Update the cache.
+		productsByEvent.length > 0 ?? setProductsCache(productsByEvent);
 
-			eventProducts = productsByEvent[eventId - 1][eventId];
-			eventProducts = productsListAlgorithm(eventProducts, country);
+		// The object will be [ {eventId: [products]}, {eventId: [products]} ]
+		productsByEvent.forEach((event) => {
+			const containsEvent = Object.keys(event).includes(eventId);
+			if (containsEvent) {
+				eventProducts = event[eventId];
+			}
+		});
+		eventProducts = productsListAlgorithm(eventProducts, country);
 
-			// The object will be [ {eventId: [products]}, {eventId: [products]} ]
-			// [eventId - 1] is for the position on the array that is -1 because it start on 0.
-			// [eventId] is for getting the products for the eventId.
-			return eventProducts;
+		return eventProducts;
 		}
 	} catch (err) {
 		console.log(err);

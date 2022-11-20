@@ -27,10 +27,8 @@ const verifySession = async (req, res, next) => {
 				next(new RestError(err.message, 403));
 			} else {
 				// hacer nullchecks, tire un token con un email sin usuario registrado y me tiro el servicio
-				console.log(receivedTransaction);
 				const transactionId = receivedTransaction._id;
 				const transaction = await Transaction.findOne({ transactionId });
-				console.log(transaction);
 				req.transaction = transaction;
 				if (transaction.status === 'Expired') {
 					//TODO: Ver el manejo de la expiracion y eso.

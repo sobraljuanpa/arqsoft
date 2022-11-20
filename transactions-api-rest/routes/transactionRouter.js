@@ -10,6 +10,10 @@ const sessionValidator = require('../middleware/sessionValidator');
 const ciValidator = require('ciuy');
 const Pipeline = require('pipes-and-filters');
 const axios = require('axios');
+const {
+	updateAllProductsCache,
+	getProductsByEvent
+} = require('../services/productsService');
 
 const pipeline = Pipeline.create('Transaction validations');
 
@@ -113,12 +117,10 @@ router.post('/purchase', sessionValidator, async (req, res) => {
 		} else {
 			try {
 				const selectedProduct = req.body.product;
-				console.log(selectedProduct);
 				// Find supplier integrationURl
 				const supplier = await Supplier.findOne({
 					email: selectedProduct.supplierEmail,
 				}).exec();
-				console.log(supplier);
 				const updateStockUrl =
 					`${supplier.integrationURL}/${selectedProduct.productId}`.replace(
 						/[\u200B-\u200D\uFEFF]/g,
@@ -132,6 +134,8 @@ router.post('/purchase', sessionValidator, async (req, res) => {
 					{},
 					{ params: { stock: selectedProduct.quantity } }
 				);
+
+				updateAllProductsCache();
 
 				// Get transaction and update status and product info.
 				let updatedTransaction = await Transaction.findOneAndUpdate(
@@ -150,6 +154,17 @@ router.post('/purchase', sessionValidator, async (req, res) => {
 			}
 		}
 	});
+});
+
+router.get('/eventsProducts/:eventId', async (req, res) => {
+	try {
+		const eventId = req.params.eventId;
+
+		const eventProducts = await getProductsByEvent(eventId, "Uruguay");
+		res.status(200).send(eventProducts);
+	} catch (error) {
+		return res.status(500).send({ error: error.message });
+	}
 });
 
 router.post('/validationsTest', (req, res) => {
