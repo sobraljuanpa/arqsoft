@@ -5,6 +5,25 @@ const router = express.Router();
 var jwt = require('jsonwebtoken');
 const Transaction = mongoose.model('Transaction');
 const sessionValidator = require('../middleware/sessionValidator');
+const Pipeline = require('pipes-and-filters');
+
+const pipeline = Pipeline.create('Transaction validations');
+
+const validate_mail = function(input, next){
+
+};
+
+const validate_CI = function(input, next){
+
+};
+
+const validate_stock = function(input, next){
+
+};
+
+pipeline.use(validate_mail);
+pipeline.use(validate_CI);
+pipeline.use(validate_stock);
 
 router.post('/transaction', async (req, res) => {
 	// our transaction logic goes here...
