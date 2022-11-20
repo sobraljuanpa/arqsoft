@@ -84,6 +84,17 @@ services:
       - ./general-logs-subscriber/:/app
       - ./middleware:/app/middleware
       - ./auth-api-rest/keys:/app/keys
+  transactions-api-rest:
+    restart: on-failure
+    build: transactions-api-rest/.
+    depends_on:
+      - mongo
+    ports:
+      - "3004:3004"
+    networks:
+      - sa-network
+    volumes:
+      - ./transactions-api-rest/:/app
 
 networks:
   sa-network:
