@@ -9,7 +9,7 @@
 			"name": "Auth",
 			"item": [
 				{
-					"name": "Create user",
+					"name": "Create admin user",
 					"event": [
 						{
 							"listen": "test",
@@ -54,6 +54,51 @@
 					"response": []
 				},
 				{
+					"name": "Create provider user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"\r",
+									"pm.collectionVariables.set(\"providerUserEmail\", responseData.email);\r",
+									"pm.collectionVariables.set(\"providerUserPassword\", responseData.password);\r",
+									"pm.collectionVariables.set(\"providerUserToken\", responseData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"first_name\": \"provider\",\r\n    \"last_name\": \"provider\",\r\n    \"email\": \"provider\",\r\n    \"password\": \"provider\",\r\n    \"role\": \"provider\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{authBaseURL}}/register",
+							"host": [
+								"{{authBaseURL}}"
+							],
+							"path": [
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Authenticate user",
 					"event": [
 						{
@@ -78,6 +123,49 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"email\": \"{{adminUserEmail}}\",\r\n    \"password\": \"{{adminUserPassword}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{authBaseURL}}/login",
+							"host": [
+								"{{authBaseURL}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authenticate provider",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"\r",
+									"pm.collectionVariables.set(\"providerUserToken\", responseData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{providerUserEmail}}\",\r\n    \"password\": \"{{providerUserPassword}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -555,6 +643,154 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Logs retrieval",
+			"item": [
+				{
+					"name": "Get Activity Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/activity",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"activity"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Login Audit Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/audit/login",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"audit",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Registration Audit Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/audit/register",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"audit",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Activity Logs by User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/activity/{{adminUserEmail}}",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"activity",
+								"{{adminUserEmail}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Unauthorized Access Audit Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/audit/unauthorized",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"audit",
+								"unauthorized"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Forbidden Access Audit Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/audit/forbidden",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"audit",
+								"forbidden"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
@@ -584,13 +820,18 @@
 			"type": "default"
 		},
 		{
-			"key": "createdEventId",
-			"value": "",
+			"key": "logsBaseURL",
+			"value": "http://localhost:3003",
 			"type": "default"
 		},
 		{
 			"key": "authBaseURL",
 			"value": "http://localhost:3002",
+			"type": "default"
+		},
+		{
+			"key": "createdEventId",
+			"value": "",
 			"type": "default"
 		},
 		{
@@ -603,6 +844,18 @@
 		},
 		{
 			"key": "adminUserToken",
+			"value": ""
+		},
+		{
+			"key": "providerUserEmail",
+			"value": ""
+		},
+		{
+			"key": "providerUserPassword",
+			"value": ""
+		},
+		{
+			"key": "providerUserToken",
 			"value": ""
 		}
 	]

@@ -6,6 +6,8 @@ require('./models/eventUpdateLog');
 const RequestLog = mongoose.model('RequestLog');
 const EventPublishingLog = mongoose.model('EventPublishingLog');
 const EventUpdateLog = mongoose.model('EventUpdateLog');
+const logsRoutes = require('./routes/logsRouter');
+const activityMiddleware = require('./middleware/logs/activity');
 
 // Redis
 const redis = require('redis');
@@ -21,7 +23,7 @@ subscriber.connect();
 subscriber.subscribe('request', async (message) => {
 	let messageObject = JSON.parse(message);
 	let request = new RequestLog(
-		({ method, url, body, statusCode, timetaken, timestamp } = messageObject)
+		({ method, url, body, statusCode, actor, timetaken, inboundTimestamp, outboundTimestamp } = messageObject)
 	);
 	await request.save();
 });
@@ -44,10 +46,8 @@ subscriber.subscribe('eventUpdate', async (message) => {
 
 // Express
 const app = express();
-// Todavia falta los endpoints para consultar logs
-app.get('/', (req, res) => {
-	res.send('Subscriber One');
-});
+app.use(activityMiddleware.logActivity)
+app.use(logsRoutes);
 
 main().catch((err) => console.log(err));
 

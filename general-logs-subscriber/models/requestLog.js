@@ -17,15 +17,23 @@ const requestLogSchema = new mongoose.Schema({
 		type: Number,
 		required: true,
 	},
+	actor: {
+		type: String,
+		required: false,
+	},
 	timetaken: {
 		//ms
 		type: Number,
 		required: true,
 	},
-	timestamp: {
+	inboundTimestamp: {
 		type: Date,
 		required: true,
 	},
+	outboundTimestamp: {
+		type: Date,
+		required: true,
+	}
 });
 
 mongoose.model('RequestLog', requestLogSchema);

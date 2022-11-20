@@ -33,6 +33,7 @@ services:
       - sa-network
     volumes:
       - ./events-api-rest/:/app
+      - ./middleware:/app/middleware
       - ./auth-api-rest/keys:/app/keys
   suppliers-api-rest:
     restart: on-failure
@@ -56,6 +57,7 @@ services:
       - sa-network
     volumes:
       - ./auth-api-rest/:/app
+      - ./middleware:/app/middleware
   general-logs-subscriber:
     restart: on-failure
     build: general-logs-subscriber/.
@@ -67,6 +69,8 @@ services:
       - sa-network
     volumes:
       - ./general-logs-subscriber/:/app
+      - ./middleware:/app/middleware
+      - ./auth-api-rest/keys:/app/keys
 
 networks:
   sa-network:
