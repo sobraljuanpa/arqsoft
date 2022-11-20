@@ -682,13 +682,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{logsBaseURL}}/audit/logins",
+							"raw": "{{logsBaseURL}}/audit/login",
 							"host": [
 								"{{logsBaseURL}}"
 							],
 							"path": [
 								"audit",
-								"logins"
+								"login"
 							]
 						}
 					},
@@ -706,13 +706,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{logsBaseURL}}/audit/registrations",
+							"raw": "{{logsBaseURL}}/audit/register",
 							"host": [
 								"{{logsBaseURL}}"
 							],
 							"path": [
 								"audit",
-								"registrations"
+								"register"
 							]
 						}
 					},
@@ -737,6 +737,54 @@
 							"path": [
 								"activity",
 								"{{adminUserEmail}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Unauthorized Access Audit Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/audit/unauthorized",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"audit",
+								"unauthorized"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Forbidden Access Audit Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/audit/forbidden",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"audit",
+								"forbidden"
 							]
 						}
 					},

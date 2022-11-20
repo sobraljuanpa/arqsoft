@@ -29,7 +29,7 @@ const verifyAdminToken = async (req, res, next) => {
 				req.user = user;
 				email = user.email;
 				const newUser = await User.findOne({ email });
-				if ('admin' != newUser.role) {
+				if ('admin' != newUser?.role) {
 					return res.status(403).send('Usuario no tiene rol de administrador');
 				}
 				next();

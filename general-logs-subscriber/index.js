@@ -7,6 +7,7 @@ const RequestLog = mongoose.model('RequestLog');
 const EventPublishingLog = mongoose.model('EventPublishingLog');
 const EventUpdateLog = mongoose.model('EventUpdateLog');
 const logsRoutes = require('./routes/logsRouter');
+const activityMiddleware = require('./middleware/logs/activity');
 
 // Redis
 const redis = require('redis');
@@ -45,6 +46,7 @@ subscriber.subscribe('eventUpdate', async (message) => {
 
 // Express
 const app = express();
+app.use(activityMiddleware.logActivity)
 app.use(logsRoutes);
 
 main().catch((err) => console.log(err));
