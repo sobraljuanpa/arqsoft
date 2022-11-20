@@ -1,6 +1,5 @@
 require('./models/Supplier');
 require('./models/eventModel');
-require('./models/userModel');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -12,10 +11,16 @@ const {
 const CACHE_UPDATE_TIME = '300000'
 
 const eventsRoutes = require('./routes/eventsRouter');
+const activityMiddleware = require('./middleware/logs/activity');
+const eventsMiddleware = require('./middleware/logs/events');
+
 const app = express();
 const port = 3000;
-
+// configuro middleware
 app.use(bodyParser.json());
+app.use(activityMiddleware.logActivity); //importante configurar middleware antes de las rutas si no se lo saltea
+app.use(eventsMiddleware.logEventUpdate);
+app.use(eventsMiddleware.logEventPublishing);
 app.use(eventsRoutes);
 
 main().catch((err) => console.log(err));

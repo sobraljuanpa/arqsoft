@@ -1,221 +1,796 @@
 {
 	"info": {
-		"_postman_id": "bc3f77c9-c36e-4119-a0aa-c3401ada8e65",
+		"_postman_id": "e5e4a37d-d1f7-4df8-88eb-5b10e7f66e84",
 		"name": "events-apitests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Add event",
-			"event": [
+			"name": "Auth",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 201\", function () {\r",
-							"    pm.response.to.have.status(201);\r",
-							"});\r",
-							"\r",
-							"const responseData = pm.response.json();\r",
-							"pm.test(\"Event name saved correctly\", function (){\r",
-							"    pm.expect(responseData.name).to.equal(\"Buenos muchachos en la trastienda\");\r",
-							"});\r",
-							"\r",
-							"pm.collectionVariables.set(\"createdEventId\", responseData._id);"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"name\": \"Buenos muchachos en la trastienda\",\r\n  \"description\": \"tocan los buenos\",\r\n  \"startDate\": \"2022-10-06\",\r\n  \"endDate\": \"2022-10-06\",\r\n  \"country\": \"Uruguay\",\r\n  \"city\": \"Montevideo\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"name": "Create admin user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"\r",
+									"pm.collectionVariables.set(\"adminUserEmail\", responseData.email);\r",
+									"pm.collectionVariables.set(\"adminUserPassword\", responseData.password);\r",
+									"pm.collectionVariables.set(\"adminUserToken\", responseData.token);"
+								],
+								"type": "text/javascript"
+							}
 						}
-					}
-				},
-				"url": {
-					"raw": "{{baseURL}}/events",
-					"host": [
-						"{{baseURL}}"
 					],
-					"path": [
-						"events"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Assert event created properly Copy",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"const responseData = pm.response.json();\r",
-							"pm.test(\"Event attributes saved correctly\", function (){\r",
-							"    pm.expect(responseData.name).to.equal(\"Buenos muchachos en la trastienda\");\r",
-							"    pm.expect(responseData.description).to.equal(\"tocan los buenos\");\r",
-							"    pm.expect(responseData.country).to.equal(\"Uruguay\");\r",
-							"    pm.expect(responseData.city).to.equal(\"Montevideo\");\r",
-							"    pm.expect(responseData.startDate).to.equal(responseData.endDate);\r",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseURL}}/events/{{createdEventId}}",
-					"host": [
-						"{{baseURL}}"
-					],
-					"path": [
-						"events",
-						"{{createdEventId}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get all events",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"const responseData = pm.response.json();\r",
-							"pm.test(\"Response format is an array with at least one element\", function() {\r",
-							"    pm.expect(responseData).to.be.an(\"array\");\r",
-							"    pm.expect(responseData.length).to.gte(1);\r",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseURL}}/events",
-					"host": [
-						"{{baseURL}}"
-					],
-					"path": [
-						"events"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Update created event",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"const responseData = pm.response.json();\r",
-							"pm.test(\"Event attributes updated correctly\", function (){\r",
-							"    pm.expect(responseData.name).to.equal(\"Prueba modificacion\");\r",
-							"    pm.expect(responseData.description).to.equal(\"Probando otro campo\");\r",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Prueba modificacion\",\r\n    \"description\": \"Probando otro campo\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"first_name\": \"admin\",\r\n    \"last_name\": \"admin\",\r\n    \"email\": \"admin\",\r\n    \"password\": \"admin\",\r\n    \"role\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{authBaseURL}}/register",
+							"host": [
+								"{{authBaseURL}}"
+							],
+							"path": [
+								"register"
+							]
 						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "{{baseURL}}/events/{{createdEventId}}",
-					"host": [
-						"{{baseURL}}"
+				{
+					"name": "Create provider user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"\r",
+									"pm.collectionVariables.set(\"providerUserEmail\", responseData.email);\r",
+									"pm.collectionVariables.set(\"providerUserPassword\", responseData.password);\r",
+									"pm.collectionVariables.set(\"providerUserToken\", responseData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
 					],
-					"path": [
-						"events",
-						"{{createdEventId}}"
-					]
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"first_name\": \"provider\",\r\n    \"last_name\": \"provider\",\r\n    \"email\": \"provider\",\r\n    \"password\": \"provider\",\r\n    \"role\": \"provider\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{authBaseURL}}/register",
+							"host": [
+								"{{authBaseURL}}"
+							],
+							"path": [
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authenticate user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"\r",
+									"pm.collectionVariables.set(\"adminUserToken\", responseData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{adminUserEmail}}\",\r\n    \"password\": \"{{adminUserPassword}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{authBaseURL}}/login",
+							"host": [
+								"{{authBaseURL}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authenticate provider",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"\r",
+									"pm.collectionVariables.set(\"providerUserToken\", responseData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{providerUserEmail}}\",\r\n    \"password\": \"{{providerUserPassword}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{authBaseURL}}/login",
+							"host": [
+								"{{authBaseURL}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Enable event",
-			"event": [
+			"name": "Event creation",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"const responseData = pm.response.json();\r",
-							"pm.test(\"Event attributes updated correctly\", function (){\r",
-							"    pm.expect(responseData.enabled).to.equal(true)});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "PATCH",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"enabled\": \"true\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"name": "Add event",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"pm.test(\"Event name saved correctly\", function (){\r",
+									"    pm.expect(responseData.name).to.equal(\"Buenos muchachos en la trastienda\");\r",
+									"});\r",
+									"\r",
+									"pm.collectionVariables.set(\"createdEventId\", responseData._id);"
+								],
+								"type": "text/javascript"
+							}
 						}
-					}
-				},
-				"url": {
-					"raw": "{{baseURL}}/events/{{createdEventId}}",
-					"host": [
-						"{{baseURL}}"
 					],
-					"path": [
-						"events",
-						"{{createdEventId}}"
-					]
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Buenos muchachos en la trastienda\",\r\n  \"description\": \"tocan los buenos\",\r\n  \"startDate\": \"2022-10-06\",\r\n  \"endDate\": \"2022-10-06\",\r\n  \"country\": \"Uruguay\",\r\n  \"city\": \"Montevideo\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/events",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"events"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
+		},
+		{
+			"name": "Event retrieval",
+			"item": [
+				{
+					"name": "Assert event created properly Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"pm.test(\"Event attributes saved correctly\", function (){\r",
+									"    pm.expect(responseData.name).to.equal(\"Buenos muchachos en la trastienda\");\r",
+									"    pm.expect(responseData.description).to.equal(\"tocan los buenos\");\r",
+									"    pm.expect(responseData.country).to.equal(\"Uruguay\");\r",
+									"    pm.expect(responseData.city).to.equal(\"Montevideo\");\r",
+									"    pm.expect(responseData.startDate).to.equal(responseData.endDate);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/events/{{createdEventId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"events",
+								"{{createdEventId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all events",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"pm.test(\"Response format is an array with at least one element\", function() {\r",
+									"    pm.expect(responseData).to.be.an(\"array\");\r",
+									"    pm.expect(responseData.length).to.gte(1);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/events",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"events"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Event updates",
+			"item": [
+				{
+					"name": "Update created event",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"pm.test(\"Event attributes updated correctly\", function (){\r",
+									"    pm.expect(responseData.name).to.equal(\"Prueba modificacion\");\r",
+									"    pm.expect(responseData.description).to.equal(\"Probando otro campo\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Prueba modificacion\",\r\n    \"description\": \"Probando otro campo\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/events/{{createdEventId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"events",
+								"{{createdEventId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update created event Enabled",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"pm.test(\"Event attributes updated correctly\", function (){\r",
+									"    pm.expect(responseData.name).to.equal(\"Prueba modificacion\");\r",
+									"    pm.expect(responseData.description).to.equal(\"Probando otro campo\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"enabled\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/events/{{createdEventId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"events",
+								"{{createdEventId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update created event Creator",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"pm.test(\"Event attributes updated correctly\", function (){\r",
+									"    pm.expect(responseData.name).to.equal(\"Prueba modificacion\");\r",
+									"    pm.expect(responseData.description).to.equal(\"Probando otro campo\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"creator\": \"Prueba modificacion\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/events/{{createdEventId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"events",
+								"{{createdEventId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update enabled event valid fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"pm.test(\"Event attributes updated correctly\", function (){\r",
+									"    pm.expect(responseData.name).to.equal(\"Prueba modificacion\");\r",
+									"    pm.expect(responseData.description).to.equal(\"Probando otro campo\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"startDate\": \"2002-02-02\",\r\n    \"endDate\": \"2002-02-02\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/events/{{createdEventId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"events",
+								"{{createdEventId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update enabled event invalid fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"pm.test(\"Event attributes updated correctly\", function (){\r",
+									"    pm.expect(responseData.name).to.equal(\"Prueba modificacion\");\r",
+									"    pm.expect(responseData.description).to.equal(\"Probando otro campo\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Prueba modificacion\",\r\n    \"description\": \"Probando otro campo\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/events/{{createdEventId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"events",
+								"{{createdEventId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Event approval",
+			"item": [
+				{
+					"name": "Enable event",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const responseData = pm.response.json();\r",
+									"pm.test(\"Event attributes updated correctly\", function (){\r",
+									"    pm.expect(responseData.enabled).to.equal(true)});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"enabled\": \"true\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/events/{{createdEventId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"events",
+								"{{createdEventId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Logs retrieval",
+			"item": [
+				{
+					"name": "Get Activity Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/activity",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"activity"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Login Audit Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/audit/login",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"audit",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Registration Audit Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/audit/register",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"audit",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Activity Logs by User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/activity/{{adminUserEmail}}",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"activity",
+								"{{adminUserEmail}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Unauthorized Access Audit Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/audit/unauthorized",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"audit",
+								"unauthorized"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Forbidden Access Audit Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{adminUserToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{logsBaseURL}}/audit/forbidden",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"audit",
+								"forbidden"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
@@ -245,9 +820,43 @@
 			"type": "default"
 		},
 		{
+			"key": "logsBaseURL",
+			"value": "http://localhost:3003",
+			"type": "default"
+		},
+		{
+			"key": "authBaseURL",
+			"value": "http://localhost:3002",
+			"type": "default"
+		},
+		{
 			"key": "createdEventId",
 			"value": "",
 			"type": "default"
+		},
+		{
+			"key": "adminUserEmail",
+			"value": ""
+		},
+		{
+			"key": "adminUserPassword",
+			"value": ""
+		},
+		{
+			"key": "adminUserToken",
+			"value": ""
+		},
+		{
+			"key": "providerUserEmail",
+			"value": ""
+		},
+		{
+			"key": "providerUserPassword",
+			"value": ""
+		},
+		{
+			"key": "providerUserToken",
+			"value": ""
 		}
 	]
 }
