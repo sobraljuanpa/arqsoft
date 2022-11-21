@@ -38,7 +38,10 @@ const getAllProducts = async () => {
 
 const getSupplierProducts = async (integrationUrl) => {
 	try {
-		const supplierProductsUrl = integrationUrl.replace(/[\u200B-\u200D\uFEFF]/g, '');
+		const supplierProductsUrl = integrationUrl.replace(
+			/[\u200B-\u200D\uFEFF]/g,
+			''
+		);
 		const response = await axios.get(supplierProductsUrl);
 		return response.data;
 	} catch (err) {
@@ -72,7 +75,7 @@ const setProductsCache = async (productsByEvent) => {
 const separateProductsByEvents = (products) => {
 	try {
 		// If there are products we set the initial eventId
-		if (products) {
+		if (products.length > 0) {
 			let productsByEvents = [];
 
 			let eventId = products[0].eventId;
@@ -103,6 +106,7 @@ const separateProductsByEvents = (products) => {
 
 const getProductsByEvent = async (eventId, country) => {
 	try {
+		let eventProducts = [];
 		const cachedProducts = await RedisClient.get(`eventProducts?${eventId}`);
 		if (cachedProducts) {
 			eventProducts = JSON.parse(cachedProducts);
@@ -115,12 +119,15 @@ const getProductsByEvent = async (eventId, country) => {
 			// Update the cache.
 			productsByEvent.length > 0 ?? setProductsCache(productsByEvent);
 
-			eventProducts = productsByEvent[eventId - 1][eventId];
+			// The object will be [ {eventId: [products]}, {eventId: [products]} ]
+			productsByEvent.forEach((event) => {
+				const containsEvent = Object.keys(event).includes(eventId);
+				if (containsEvent) {
+					eventProducts = event[eventId];
+				}
+			});
 			eventProducts = productsListAlgorithm(eventProducts, country);
 
-			// The object will be [ {eventId: [products]}, {eventId: [products]} ]
-			// [eventId - 1] is for the position on the array that is -1 because it start on 0.
-			// [eventId] is for getting the products for the eventId.
 			return eventProducts;
 		}
 	} catch (err) {
@@ -130,9 +137,17 @@ const getProductsByEvent = async (eventId, country) => {
 
 const productsListAlgorithm = (products, country) => {
 	if (products) {
-		const firstProduct = products[0];
-		let previousSupplierEmail = firstProduct.supplierEmail;
-		const productsFromDifferentSupplier = [firstProduct];
+		let firstProduct = {};
+		let previousSupplierEmail = '';
+		let productsFromDifferentSupplier = [];
+
+		console.log('Products', products);
+		if (products[0].country === country) {
+			firstProduct = products[0];
+			previousSupplierEmail = firstProduct.supplierEmail;
+			productsFromDifferentSupplier = [firstProduct];
+			console.log('First product', firstProduct);
+		}
 		products.forEach((product) => {
 			if (
 				product.supplierEmail != previousSupplierEmail &&
@@ -153,6 +168,37 @@ const updateAllProductsCache = async () => {
 	const products = await getAllProducts();
 	const productsByEvent = separateProductsByEvents(products);
 	await setProductsCache(productsByEvent);
+};
+
+const getProductStock = async (supplierEmail, productId) => {
+	try {
+		console.log(supplierEmail, productId);
+		const supplier = await Supplier.findOne({ email: supplierEmail }).exec();
+		const supplierProducts = await getSupplierProducts(supplier.integrationURL);
+		const product = supplierProducts.find(
+			(product) => product._id == productId
+		);
+		console.log(product);
+		return product.stock;
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+const updateProductStock = async (productId, supplierEmail, quantity) => {
+	try {
+		const supplier = await Supplier.findOne({ email: supplierEmail }).exec();
+		const updateStockUrl = `${supplier.integrationURL}/${productId}`.replace(
+			/[\u200B-\u200D\uFEFF]/g,
+			''
+		);
+		// Retain stock
+		await axios.put(updateStockUrl, {}, { params: { stock: quantity } });
+
+		updateAllProductsCache();
+	} catch (error) {
+		console.log(error);
+	}
 };
 
 // Require some testing.
@@ -182,6 +228,8 @@ module.exports = {
 	getAllProducts,
 	getProductsByEvent,
 	separateProductsByEvents,
-	updateProductsCache: setProductsCache,
+	setProductsCache,
 	updateAllProductsCache,
+	getProductStock,
+	updateProductStock
 };
