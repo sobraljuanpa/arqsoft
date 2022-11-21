@@ -9,11 +9,13 @@ const port = 3004;
 const transactionsRoutes = require('./routes/transactionRouter');
 
 const RedisClient = require('./cache/cacheManager');
-const {
-	updateAllProductsCache
-} = require('./services/productsService');
+const { updateAllProductsCache } = require('./services/productsService');
 
-const CACHE_UPDATE_TIME = '300000'
+const {
+	validateAllTransactionsState,
+} = require('./services/transactionService');
+
+const CACHE_UPDATE_TIME = '600000';
 
 app.use(bodyParser.json());
 app.use(transactionsRoutes);
@@ -26,18 +28,21 @@ async function main() {
 		.then(() => console.log('Connected to mongo instance'));
 
 	RedisClient.connect();
-		
+
 	app.listen(port, () => {
 		console.log(`Listening on port ${port}`);
 	});
 
 	updateAllProductsCache();
+
+	//TODO: Capaz esto moverlo para algun lado como "tareas recurrentes"
 	setInterval(async () => {
 		try {
+			validateAllTransactionsState();
 			updateAllProductsCache();
 		} catch (error) {
 			console.log('Error caching products');
 			console.log(error);
 		}
-	}, CACHE_UPDATE_TIME)
+	}, CACHE_UPDATE_TIME);
 }

@@ -4,7 +4,6 @@ const Event = mongoose.model('Event');
 const router = express.Router();
 require('../middleware/models/userModel');
 const authMiddleware = require('../middleware/auth/authorization');
-const { getProductsByEvent } = require('../services/productsService');
 
 class RestError extends Error {
 	constructor(message, status) {
@@ -145,17 +144,6 @@ router.patch('/events/:id', authMiddleware.verifyAdminToken, async (req, res) =>
 		res
 			.status(400)
 			.send("Event can't be approved by same user that created it");
-	}
-});
-
-router.get('/eventsProducts/:eventId', async (req, res) => {
-	try {
-		const eventId = req.params.eventId;
-
-		const eventProducts = await getProductsByEvent(eventId, "Uruguay");
-		res.status(200).send(eventProducts);
-	} catch (error) {
-		return res.status(500).send({ error: error.message });
 	}
 });
 

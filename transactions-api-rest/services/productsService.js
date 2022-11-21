@@ -113,22 +113,22 @@ const getProductsByEvent = async (eventId, country) => {
 			eventProducts = productsListAlgorithm(eventProducts, country);
 			return eventProducts;
 		} else {
-		const products = await getAllProducts();
-		const productsByEvent = separateProductsByEvents(products);
+			const products = await getAllProducts();
+			const productsByEvent = separateProductsByEvents(products);
 
-		// Update the cache.
-		productsByEvent.length > 0 ?? setProductsCache(productsByEvent);
+			// Update the cache.
+			productsByEvent.length > 0 ?? setProductsCache(productsByEvent);
 
-		// The object will be [ {eventId: [products]}, {eventId: [products]} ]
-		productsByEvent.forEach((event) => {
-			const containsEvent = Object.keys(event).includes(eventId);
-			if (containsEvent) {
-				eventProducts = event[eventId];
-			}
-		});
-		eventProducts = productsListAlgorithm(eventProducts, country);
+			// The object will be [ {eventId: [products]}, {eventId: [products]} ]
+			productsByEvent.forEach((event) => {
+				const containsEvent = Object.keys(event).includes(eventId);
+				if (containsEvent) {
+					eventProducts = event[eventId];
+				}
+			});
+			eventProducts = productsListAlgorithm(eventProducts, country);
 
-		return eventProducts;
+			return eventProducts;
 		}
 	} catch (err) {
 		console.log(err);
@@ -137,9 +137,17 @@ const getProductsByEvent = async (eventId, country) => {
 
 const productsListAlgorithm = (products, country) => {
 	if (products) {
-		const firstProduct = products[0];
-		let previousSupplierEmail = firstProduct.supplierEmail;
-		const productsFromDifferentSupplier = [firstProduct];
+		let firstProduct = {};
+		let previousSupplierEmail = '';
+		let productsFromDifferentSupplier = [];
+
+		console.log('Products', products);
+		if (products[0].country === country) {
+			firstProduct = products[0];
+			previousSupplierEmail = firstProduct.supplierEmail;
+			productsFromDifferentSupplier = [firstProduct];
+			console.log('First product', firstProduct);
+		}
 		products.forEach((product) => {
 			if (
 				product.supplierEmail != previousSupplierEmail &&
@@ -160,6 +168,21 @@ const updateAllProductsCache = async () => {
 	const products = await getAllProducts();
 	const productsByEvent = separateProductsByEvents(products);
 	await setProductsCache(productsByEvent);
+};
+
+const getProductStock = async (supplierEmail, productId) => {
+	try {
+		console.log(supplierEmail, productId)
+		const supplier = await Supplier.findOne({ email: supplierEmail }).exec();
+		const supplierProducts = await getSupplierProducts(supplier.integrationURL);
+		const product = supplierProducts.find(
+			(product) => product._id == productId
+		);
+		console.log(product)
+		return product.stock;
+	} catch (err) {
+		console.log(err);
+	}
 };
 
 // Require some testing.
@@ -189,6 +212,7 @@ module.exports = {
 	getAllProducts,
 	getProductsByEvent,
 	separateProductsByEvents,
-	updateProductsCache: setProductsCache,
+	setProductsCache,
 	updateAllProductsCache,
+	getProductStock,
 };

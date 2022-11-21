@@ -12,9 +12,11 @@ const Pipeline = require('pipes-and-filters');
 const axios = require('axios');
 const {
 	updateAllProductsCache,
-	getProductsByEvent
+	getProductsByEvent,
+	getProductStock,
 } = require('../services/productsService');
 
+// Move this to another file.
 const pipeline = Pipeline.create('Transaction validations');
 
 const validate_mail = function (input, next) {
@@ -34,18 +36,28 @@ const validate_CI = function (input, next) {
 	}
 };
 
-const validate_stock = function (input, next) {
+const validate_stock = async function (input, next) {
 	//hay que validar stock, mismo formato que las anteriores
+	const quantity = input.product.quantity;
+	const productId = input.product.productId;
+	const supplierEmail = input.product.supplierEmail;
+	console.log('Quantity', quantity);
+	const productStock = await getProductStock(supplierEmail, productId);
+	if (quantity <= productStock) {
+		next(null, input);
+	} else {
+		return next(Error('No hay stock suficiente para realizar la compra.'));
+	}
 };
 
 pipeline.use(validate_mail);
 pipeline.use(validate_CI);
-//pipeline.use(validate_stock);
+pipeline.use(validate_stock);
+
+const sessionQueue = expressQueue({ activeLimit: 1, queuedLimit: 100000 });
 
 router.post('/transaction', async (req, res) => {
-	// our transaction logic goes here...
 	try {
-		// Get user input
 		const { name, birthdate, country } = req.body;
 
 		// Validate user input
@@ -53,26 +65,17 @@ router.post('/transaction', async (req, res) => {
 			res.status(400).send('Campos incompletos');
 		}
 
-		// Create transaction in our database
-		// TODO: Encrypt password
 		const transaction = await Transaction.create({
 			name,
 			birthdate,
-			country, // sanitize: convert email to lowercase
+			country,
 			status: 'En proceso',
+			startDate: new Date().toUTCString(),
 		});
-		// TODO: Evaluar si esto es necesario, me parece que no. Que haga login siempre.
 		const PRIVATE_KEY = fs.readFileSync('./keys/private.key', 'utf8');
-		const token = jwt.sign(
-			JSON.stringify(transaction),
-			PRIVATE_KEY,
-			{
-				algorithm: 'RS256',
-			},
-			{
-				expiresIn: '15m',
-			}
-		);
+		const token = jwt.sign(JSON.stringify(transaction), PRIVATE_KEY, {
+			algorithm: 'RS256',
+		});
 		const response = { sessionToken: token };
 		res.status(201).json(response);
 	} catch (err) {
@@ -80,36 +83,10 @@ router.post('/transaction', async (req, res) => {
 	}
 });
 
-router.get('/test', sessionValidator, async (req, res) => {
-	res.status(200).send('Done.');
-});
-
-const queueMw = expressQueue({ activeLimit: 1, queuedLimit: 100000 });
-
-// Hacer que sea configurable el limite
-router.post('/buy', queueMw, async (req, res) => {
-	try {
-		const stock = req.query.stock;
-		const product = await axios.put(
-			'http://suppliers-products-mock-api-rest:3005/supplier/1/product/637937926c6157f5991e4310',
-			{},
-			{ params: { stock: stock } }
-		);
-		res.status(200).send('test');
-	} catch (error) {
-		console.log(error);
-	}
-});
-
-router.post('/purchase', sessionValidator, async (req, res) => {
-	//que venga en el body ademas de lo por letra, providerId y productId
-	// validar body completo
-	// pasar por el pipe
-
+router.post('/purchase', sessionValidator, sessionQueue, async (req, res) => {
 	/**
 	 * {product: { productId: number, supplierEmail: string, eventId, quantity: number }, email: string, ci:string}
 	 */
-
 	pipeline.execute(req.body, async function (err, result) {
 		if (err) {
 			console.log(err.message);
@@ -156,26 +133,16 @@ router.post('/purchase', sessionValidator, async (req, res) => {
 	});
 });
 
-router.get('/eventsProducts/:eventId', async (req, res) => {
+router.get('/eventsProducts/:eventId', sessionValidator, async (req, res) => {
 	try {
 		const eventId = req.params.eventId;
+		const country = req.transaction.country;
 
-		const eventProducts = await getProductsByEvent(eventId, "Uruguay");
+		const eventProducts = await getProductsByEvent(eventId, country);
 		res.status(200).send(eventProducts);
 	} catch (error) {
 		return res.status(500).send({ error: error.message });
 	}
-});
-
-router.post('/validationsTest', (req, res) => {
-	pipeline.execute(req.body, function (err, result) {
-		if (err) {
-			console.log(err.message);
-			res.status(400).send(err.message);
-		} else {
-			res.status(200).send('Validado con exito');
-		}
-	});
 });
 
 router.get('/transaction/:id', async (req, res) => {});
