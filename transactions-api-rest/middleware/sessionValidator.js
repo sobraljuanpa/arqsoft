@@ -2,7 +2,10 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const mongoose = require('mongoose');
 const Transaction = mongoose.model('Transaction');
-const { updateTransactionState, hasExpired } = require('../services/transactionService');
+const {
+	updateTransactionState,
+	hasExpired,
+} = require('../services/transactionService');
 
 class RestError extends Error {
 	constructor(message, status) {
@@ -11,8 +14,42 @@ class RestError extends Error {
 	}
 }
 
+const isValidOperation = (transactionStatus, requestedRoute, next) => {
+	switch (transactionStatus) {
+		case 'Fallida':
+			next(RestError(
+				'La transacción ha sido Fallida, por favor comience de nuevo.',
+				400
+			));
+			break;
+		case 'Completada':
+			next(new RestError(
+				'La transacción ha sido Completada, por favor comience de nuevo.',
+				400
+			));
+			break;
+		case 'En proceso':
+			if (requestedRoute != 'purchase' && requestedRoute != 'eventsProducts') {
+				next(new RestError(
+					'La operación solicitada no es valida para el estado de la transacción.',
+					400
+				));
+			}
+			break;
+		case 'Pendiente de pago':
+			if (requestedRoute != 'payment' && requestedRoute != 'eventsProducts') {
+				next(new RestError(
+					'La operación solicitada no es valida para el estado de la transacción.',
+					400
+				));
+			}
+			break;
+	}
+};
+
 const verifySession = async (req, res, next) => {
 	const token = req.headers['sessiontoken'];
+	const requestedRoute = req.route.path.split('/')[1];
 
 	if (!token) {
 		next(new RestError('Se necesita una transacción.', 401));
@@ -33,17 +70,9 @@ const verifySession = async (req, res, next) => {
 				}
 
 				const transactionId = receivedTransaction._id;
-				console.log(transactionId);
 				const transaction = await Transaction.findOne({ _id: transactionId });
-				console.log(transaction);
 				req.transaction = transaction;
-				if (transaction.status === 'Fallida') {
-					return res
-						.status(400)
-						.send(
-							'La transacción ha sido Fallida, por favor comience de nuevo.'
-						);
-				}
+				isValidOperation(transaction.status, requestedRoute, next);
 				next();
 			}
 		}
