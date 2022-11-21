@@ -14,6 +14,7 @@ const {
 	updateAllProductsCache,
 	getProductsByEvent,
 	getProductStock,
+	updateProductStock,
 } = require('../services/productsService');
 
 // Move this to another file.
@@ -106,26 +107,12 @@ router.post('/purchase', sessionValidator, sessionQueue, async (req, res) => {
 		} else {
 			try {
 				const selectedProduct = req.body.product;
-				// TODO: Move this to product service
-				// Find supplier integrationURl
-				const supplier = await Supplier.findOne({
-					email: selectedProduct.supplierEmail,
-				}).exec();
-				const updateStockUrl =
-					`${supplier.integrationURL}/${selectedProduct.productId}`.replace(
-						/[\u200B-\u200D\uFEFF]/g,
-						''
-					);
-
-				// Retain stock
-				await axios.put(
-					// 'http://suppliers-products-mock-api-rest:3005/supplier/1/product/637937926c6157f5991e4310',
-					updateStockUrl,
-					{},
-					{ params: { stock: selectedProduct.quantity } }
+				
+				await updateProductStock(
+					selectedProduct.productId,
+					selectedProduct.supplierEmail,
+					selectedProduct.quantity
 				);
-
-				updateAllProductsCache();
 
 				// TODO: Chequear que este retornando el objeto actualizado.
 				// Get transaction and update status and product info.
@@ -148,24 +135,34 @@ router.post('/purchase', sessionValidator, sessionQueue, async (req, res) => {
 });
 
 router.post('/payment', sessionValidator, sessionQueue, async (req, res) => {
-	const { fullName, cardNumber, birthDate, billingAddress } = req.body;
+	try {
+		const { fullName, cardNumber, birthDate, billingAddress } = req.body;
 
-	if (fullName && cardNumber && birthDate && billingAddress) {
-		// TODO: Chequear que este retornando el objeto actualizado.
-		// Get transaction and update status and product info.
-		let updatedTransaction = await Transaction.findOneAndUpdate(
-			req.transaction._id,
-			{
-				status: 'Completada',
-				paymentInfo: {
-					fullName: fullName,
-					cardNumber: cardNumber, // TODO: Encrypt this.
-					birthDate: birthDate,
-					billingAddress: billingAddress,
-				},
-			}
+		if (fullName && cardNumber && birthDate && billingAddress) {
+			// TODO: Chequear que este retornando el objeto actualizado.
+			// Get transaction and update status and product info.
+			let updatedTransaction = await Transaction.findOneAndUpdate(
+				req.transaction._id,
+				{
+					status: 'Completada',
+					paymentInfo: {
+						fullName: fullName,
+						cardNumber: cardNumber, // TODO: Encrypt this.
+						birthDate: birthDate,
+						billingAddress: billingAddress,
+					},
+				}
+			);
+			res.status(200).send(updatedTransaction);
+		}
+	} catch (error) {
+		console.log(req);
+		await updateProductStock(
+			req.transaction.productId,
+			req.transaction.supplierEmail,
+			-req.transaction.productQuantity
 		);
-		res.status(200).send(updatedTransaction);
+		res.status(400).send(error.message);
 	}
 });
 

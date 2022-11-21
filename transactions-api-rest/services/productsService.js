@@ -172,16 +172,32 @@ const updateAllProductsCache = async () => {
 
 const getProductStock = async (supplierEmail, productId) => {
 	try {
-		console.log(supplierEmail, productId)
+		console.log(supplierEmail, productId);
 		const supplier = await Supplier.findOne({ email: supplierEmail }).exec();
 		const supplierProducts = await getSupplierProducts(supplier.integrationURL);
 		const product = supplierProducts.find(
 			(product) => product._id == productId
 		);
-		console.log(product)
+		console.log(product);
 		return product.stock;
 	} catch (err) {
 		console.log(err);
+	}
+};
+
+const updateProductStock = async (productId, supplierEmail, quantity) => {
+	try {
+		const supplier = await Supplier.findOne({ email: supplierEmail }).exec();
+		const updateStockUrl = `${supplier.integrationURL}/${productId}`.replace(
+			/[\u200B-\u200D\uFEFF]/g,
+			''
+		);
+		// Retain stock
+		await axios.put(updateStockUrl, {}, { params: { stock: quantity } });
+
+		updateAllProductsCache();
+	} catch (error) {
+		console.log(error);
 	}
 };
 
@@ -215,4 +231,5 @@ module.exports = {
 	setProductsCache,
 	updateAllProductsCache,
 	getProductStock,
+	updateProductStock
 };
