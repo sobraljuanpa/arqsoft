@@ -21,7 +21,7 @@ const validateAllTransactionsState = async () => {
 	try {
 		const transactions = await Transaction.find().lean();
 		for (transaction of transactions) {
-			if (hasExpired(transaction.startDate)) {
+			if (hasExpired(transaction.startDate) && transaction.status != 'Completada') {
 				updateTransactionState(transaction._id, 'Fallida');
 			}
 		}

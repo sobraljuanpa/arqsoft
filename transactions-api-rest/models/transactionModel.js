@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const PaymentInfo = require('./PaymentInfo');
 
 const transactionSchema = new mongoose.Schema({
 	startDate: {
@@ -32,7 +33,11 @@ const transactionSchema = new mongoose.Schema({
 	productQuantity: {
 		type: Number,
 		required: false,
-	}
+	},
+	paymentInfo: {
+		type: PaymentInfo,
+		required: false,
+	},
 });
 
 mongoose.model('Transaction', transactionSchema);

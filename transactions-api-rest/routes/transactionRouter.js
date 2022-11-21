@@ -83,6 +83,18 @@ router.post('/transaction', async (req, res) => {
 	}
 });
 
+router.get('/eventsProducts/:eventId', sessionValidator, async (req, res) => {
+	try {
+		const eventId = req.params.eventId;
+		const country = req.transaction.country;
+
+		const eventProducts = await getProductsByEvent(eventId, country);
+		res.status(200).send(eventProducts);
+	} catch (error) {
+		return res.status(500).send({ error: error.message });
+	}
+});
+
 router.post('/purchase', sessionValidator, sessionQueue, async (req, res) => {
 	/**
 	 * {product: { productId: number, supplierEmail: string, eventId, quantity: number }, email: string, ci:string}
@@ -94,6 +106,7 @@ router.post('/purchase', sessionValidator, sessionQueue, async (req, res) => {
 		} else {
 			try {
 				const selectedProduct = req.body.product;
+				// TODO: Move this to product service
 				// Find supplier integrationURl
 				const supplier = await Supplier.findOne({
 					email: selectedProduct.supplierEmail,
@@ -114,6 +127,7 @@ router.post('/purchase', sessionValidator, sessionQueue, async (req, res) => {
 
 				updateAllProductsCache();
 
+				// TODO: Chequear que este retornando el objeto actualizado.
 				// Get transaction and update status and product info.
 				let updatedTransaction = await Transaction.findOneAndUpdate(
 					req.transaction._id,
@@ -133,18 +147,26 @@ router.post('/purchase', sessionValidator, sessionQueue, async (req, res) => {
 	});
 });
 
-router.get('/eventsProducts/:eventId', sessionValidator, async (req, res) => {
-	try {
-		const eventId = req.params.eventId;
-		const country = req.transaction.country;
+router.post('/payment', sessionValidator, sessionQueue, async (req, res) => {
+	const { fullName, cardNumber, birthDate, billingAddress } = req.body;
 
-		const eventProducts = await getProductsByEvent(eventId, country);
-		res.status(200).send(eventProducts);
-	} catch (error) {
-		return res.status(500).send({ error: error.message });
+	if (fullName && cardNumber && birthDate && billingAddress) {
+		// TODO: Chequear que este retornando el objeto actualizado.
+		// Get transaction and update status and product info.
+		let updatedTransaction = await Transaction.findOneAndUpdate(
+			req.transaction._id,
+			{
+				status: 'Completada',
+				paymentInfo: {
+					fullName: fullName,
+					cardNumber: cardNumber, // TODO: Encrypt this.
+					birthDate: birthDate,
+					billingAddress: billingAddress,
+				},
+			}
+		);
+		res.status(200).send(updatedTransaction);
 	}
 });
-
-router.get('/transaction/:id', async (req, res) => {});
 
 module.exports = router;
