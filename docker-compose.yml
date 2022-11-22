@@ -96,6 +96,7 @@ services:
       - sa-network
     volumes:
       - ./transactions-api-rest/:/app
+      - ./middleware:/app/sharedMiddleware
 
 networks:
   sa-network:

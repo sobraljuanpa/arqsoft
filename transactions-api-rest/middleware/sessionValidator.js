@@ -7,13 +7,6 @@ const {
 	hasExpired,
 } = require('../services/transactionService');
 
-class RestError extends Error {
-	constructor(message, status) {
-		super(message);
-		this.status = status;
-	}
-}
-
 const isValidOperation = (transactionStatus, requestedRoute) => {
 	let validOperation = {
 		valid: true,
