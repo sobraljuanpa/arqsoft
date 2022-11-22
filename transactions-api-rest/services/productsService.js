@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Supplier = mongoose.model('Supplier');
 const axios = require('axios');
-const http = require('http');
 const RedisClient = require('../cache/cacheManager');
 
 const getAllIntegrationURLs = async () => {
@@ -140,13 +139,10 @@ const productsListAlgorithm = (products, country) => {
 		let firstProduct = {};
 		let previousSupplierEmail = '';
 		let productsFromDifferentSupplier = [];
-
-		console.log('Products', products);
 		if (products[0].country === country) {
 			firstProduct = products[0];
 			previousSupplierEmail = firstProduct.supplierEmail;
 			productsFromDifferentSupplier = [firstProduct];
-			console.log('First product', firstProduct);
 		}
 		products.forEach((product) => {
 			if (
@@ -171,18 +167,14 @@ const updateAllProductsCache = async () => {
 };
 
 const getProductStock = async (supplierEmail, productId) => {
-	try {
-		console.log(supplierEmail, productId);
-		const supplier = await Supplier.findOne({ email: supplierEmail }).exec();
-		const supplierProducts = await getSupplierProducts(supplier.integrationURL);
-		const product = supplierProducts.find(
-			(product) => product._id == productId
-		);
-		console.log(product);
-		return product.stock;
-	} catch (err) {
-		console.log(err);
+	console.log(productId);
+	const supplier = await Supplier.findOne({ email: supplierEmail }).exec();
+	const supplierProducts = await getSupplierProducts(supplier.integrationURL);
+	const product = supplierProducts.find((product) => product._id == productId);
+	if (!product) {
+		throw new Error('No existe un producto con el id especificado.');
 	}
+	return product.stock;
 };
 
 const updateProductStock = async (productId, supplierEmail, quantity) => {
@@ -231,5 +223,5 @@ module.exports = {
 	setProductsCache,
 	updateAllProductsCache,
 	getProductStock,
-	updateProductStock
+	updateProductStock,
 };

@@ -14,34 +14,34 @@ class RestError extends Error {
 	}
 }
 
-const isValidOperation = (transactionStatus, requestedRoute, next) => {
+const isValidOperation = (transactionStatus, requestedRoute, res) => {
 	switch (transactionStatus) {
 		case 'Fallida':
-			next(RestError(
-				'La transacción ha sido Fallida, por favor comience de nuevo.',
-				400
-			));
+			sendError(
+				res,
+				'La transacción ha sido Fallida, por favor comience de nuevo.'
+			);
 			break;
 		case 'Completada':
-			next(new RestError(
-				'La transacción ha sido Completada, por favor comience de nuevo.',
-				400
-			));
+			sendError(
+				res,
+				'La transacción ha sido Completada, por favor comience de nuevo.'
+			);
 			break;
 		case 'En proceso':
 			if (requestedRoute != 'purchase' && requestedRoute != 'eventsProducts') {
-				next(new RestError(
-					'La operación solicitada no es valida para el estado de la transacción.',
-					400
-				));
+				sendError(
+					res,
+					'La operación solicitada no es valida para el estado de la transacción.'
+				);
 			}
 			break;
 		case 'Pendiente de pago':
 			if (requestedRoute != 'payment' && requestedRoute != 'eventsProducts') {
-				next(new RestError(
-					'La operación solicitada no es valida para el estado de la transacción.',
-					400
-				));
+				sendError(
+					res,
+					'La operación solicitada no es valida para el estado de la transacción.'
+				);
 			}
 			break;
 	}
@@ -52,31 +52,38 @@ const verifySession = async (req, res, next) => {
 	const requestedRoute = req.route.path.split('/')[1];
 
 	if (!token) {
-		next(new RestError('Se necesita una transacción.', 401));
-	}
-	const PUBLIC_KEY = fs.readFileSync('./keys/public.key', 'utf8');
-	await jwt.verify(
-		token,
-		PUBLIC_KEY,
-		{ algorithm: 'RS256' },
-		async function (err, receivedTransaction) {
-			if (err) {
-				next(new RestError(err.message, 400));
-			} else {
-				// hacer nullchecks, tire un token con un email sin usuario registrado y me tiro el servicio
-				if (hasExpired(receivedTransaction.startDate)) {
+		res
+			.status(401)
+			.send({ status: 401, message: 'Se necesita una transacción activa.' });
+	} else {
+		const PUBLIC_KEY = fs.readFileSync('./keys/public.key', 'utf8');
+		await jwt.verify(
+			token,
+			PUBLIC_KEY,
+			{ algorithm: 'RS256' },
+			async function (err, receivedTransaction) {
+				if (err) {
+					sendError(res, err.message);
+				} else if (hasExpired(receivedTransaction.startDate)) {
 					updateTransactionState(receivedTransaction._id, 'Fallida');
-					return res.status(400).send('La transacción ha sido expirada.');
+					sendError(res, 'La transacción ha sido expirada.');
+				} else {
+					const transactionId = receivedTransaction._id;
+					const transaction = await Transaction.findOne({ _id: transactionId });
+					req.transaction = transaction;
+					isValidOperation(transaction.status, requestedRoute, res);
+					next();
 				}
-
-				const transactionId = receivedTransaction._id;
-				const transaction = await Transaction.findOne({ _id: transactionId });
-				req.transaction = transaction;
-				isValidOperation(transaction.status, requestedRoute, next);
-				next();
 			}
-		}
-	);
+		);
+	}
+};
+
+const sendError = (res, message) => {
+	res.status(400).send({
+		status: 400,
+		message: message,
+	});
 };
 
 module.exports = verifySession;
