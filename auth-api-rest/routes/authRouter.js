@@ -1,110 +1,72 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const fs = require('fs');
 const router = express.Router();
-var jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = mongoose.model('User');
+const fs = require('fs');
+var jwt = require('jsonwebtoken');
+const {
+	registerValidation,
+	loginValidation,
+} = require('../middleware/paramsValidator');
+const crypto = require('crypto');
 
-// este endpoint se usa para algo? lo queremos?
-// si no se usa para nada puedo agregar el middleware de loggeo a todas las reqs de este endpoint nomas
-router.post('/auth', async (req, res) => {
-	const token = req.headers['authorization'];
+const createToken = (user) => {
+	user.password = null;
+	const PRIVATE_KEY = fs.readFileSync('./keys/private.key', 'utf8');
+	const token = jwt.sign(JSON.stringify(user), PRIVATE_KEY, {
+		algorithm: 'RS256',
+	});
+	return token;
+};
 
-	if (!token) {
-		return res.status(403).send('A token is required for authentication');
-	}
+router.post('/register', registerValidation, async (req, res) => {
 	try {
-		const PUBLIC_KEY = fs.readFileSync('./keys/public.key', 'utf8');
-		jwt.verify(
-			token,
-			PUBLIC_KEY,
-			{ algorithm: 'RS256' },
-			async function (err, user) {
-				if (err) {
-					return res.status(403).send(err.message);
-				} else {
-					req.user = user;
-					email = user.email;
-					const newUser = await User.findOne({ email });
-					if ('admin' != newUser.role) {
-						return res.status(401).send('Usuario Invalido');
-					}
-					res.status(200).json(newUser.role);
-				}
-			}
-		);
-	} catch (err) {
-		return res.status(401).send('Token Invalido');
-	}
-});
-
-router.post('/register', async (req, res) => {
-	// our register logic goes here...
-	try {
-		// Get user input
 		const { first_name, last_name, email, password, role } = req.body;
 
-		// Validate user input
-		if (!(email && password && first_name && last_name && role)) {
-			res.status(400).send('Campos incompletos');
-		}
-		// check if user already exist
-		// Validate if user exist in our database
-		const oldUser = await User.findOne({ email });
+		const hashedPassword = crypto
+			.createHash('sha256')
+			.update(password)
+			.digest('base64');
 
-		if (oldUser) {
-			return res.status(409).send('Este email ya esta siendo utilizado');
-		}
-
-		// Create user in our database
-		// TODO: Encrypt password
 		const user = await User.create({
 			first_name,
 			last_name,
 			email: email.toLowerCase(), // sanitize: convert email to lowercase
-			password: password,
+			password: hashedPassword,
 			role: role,
 		});
-		// TODO: Evaluar si esto es necesario, me parece que no. Que haga login siempre.
-		const PRIVATE_KEY = fs.readFileSync('./keys/private.key', 'utf8');
-		const token = jwt.sign(JSON.stringify(user), PRIVATE_KEY, {
-			algorithm: 'RS256',
-		});
-		// save user token
+
+		const token = createToken(user);
 		user.token = token;
 
-		res.status(201).json(user);
+		res.status(200).json(user);
 	} catch (err) {
-		console.log(err);
+		res.status(400).send({
+			status: 400,
+			message: err.message,
+		});
 	}
 });
 
-router.post('/login', async (req, res) => {
-	// Our login logic starts here
+router.post('/login', loginValidation, async (req, res) => {
 	try {
-		// Get user input
 		const { email, password } = req.body;
 
-		// Validate user input
-		if (!(email && password)) {
-			res.status(400).send('All input is required');
-		}
+		const hashedPassword = crypto
+			.createHash('sha256')
+			.update(password)
+			.digest('base64');
+
 		// Validate if user exist in our database
 		const user = await User.findOne({ email });
 
-		if (user && password == user.password) {
-			const PRIVATE_KEY = fs.readFileSync('./keys/private.key', 'utf8');
-			// If we want to add more information to the token we have to change the first parameter.
-			// Investigate to add lifetime.
-			const token = jwt.sign(JSON.stringify(user), PRIVATE_KEY, {
-				algorithm: 'RS256',
-			});
-
-			// Save user token
+		if (user && hashedPassword == user.password) {
+			const token = createToken(user);
 			user.token = token;
+
 			res.status(200).json(user);
 		} else {
-			res.status(400).send('Invalid Credentials');
+			res.status(400).send('Credenciales inválidas.');
 		}
 	} catch (err) {
 		console.log(err);
