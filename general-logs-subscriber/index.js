@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 require('./models/requestLog');
 require('./models/eventPublishingLog');
 require('./models/eventUpdateLog');
+const swaggerUI = require('swagger-ui-express');
+const swaggerFile = require('./logs-swagger.json');
 const RequestLog = mongoose.model('RequestLog');
 const EventPublishingLog = mongoose.model('EventPublishingLog');
 const EventUpdateLog = mongoose.model('EventUpdateLog');
@@ -48,6 +50,7 @@ subscriber.subscribe('eventUpdate', async (message) => {
 const app = express();
 app.use(activityMiddleware.logActivity)
 app.use(logsRoutes);
+app.use('/doc', swaggerUI.serve, swaggerUI.setup(swaggerFile));
 
 main().catch((err) => console.log(err));
 
