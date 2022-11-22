@@ -19,7 +19,7 @@ const {
 	updateProductStock,
 } = require('../services/productsService');
 
-const sessionQueue = expressQueue({ activeLimit: 1, queuedLimit: 100000 });
+const sessionQueue = expressQueue({ activeLimit: 1, queuedLimit: process.env.MAX_QUEUED_TRANSACTIONS });
 
 router.post('/transaction', transactionValidation, async (req, res) => {
 	try {

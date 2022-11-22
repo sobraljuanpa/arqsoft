@@ -1,3 +1,4 @@
+require('dotenv').config()
 require('./models/transactionModel');
 require('./models/Supplier');
 require('./models/Address');
@@ -6,9 +7,10 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const swaggerUI = require('swagger-ui-express');
 const swaggerFile = require('./transactions-swagger.json');
+const config = process.env;
 
 const app = express();
-const port = 3004;
+const port = config.DEPLOY_PORT;
 const transactionsRoutes = require('./routes/transactionRouter');
 
 const RedisClient = require('./cache/cacheManager');
@@ -17,8 +19,6 @@ const { updateAllProductsCache } = require('./services/productsService');
 const {
 	validateAllTransactionsState,
 } = require('./services/transactionService');
-
-const CACHE_UPDATE_TIME = '600000';
 
 app.use(bodyParser.json());
 app.use(transactionsRoutes);
@@ -48,5 +48,5 @@ async function main() {
 			console.log('Error caching products');
 			console.log(error);
 		}
-	}, CACHE_UPDATE_TIME);
+	}, config.CACHE_UPDATE_TIME);
 }

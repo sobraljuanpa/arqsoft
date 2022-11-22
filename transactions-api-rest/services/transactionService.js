@@ -4,8 +4,7 @@ const Transaction = mongoose.model('Transaction');
 const { updateProductStock } = require('./productsService');
 
 const hasExpired = (startDate) => {
-	//TODO: Make this config.
-	var expirationTime = 5 * 60000; // 60000 being the number of milliseconds in a minute
+	var expirationTime = process.env.SESSION_DURATION * 60000; // 60000 being the number of milliseconds in a minute
 	var now = new Date();
 	var timePassed = new Date(now - expirationTime);
 
