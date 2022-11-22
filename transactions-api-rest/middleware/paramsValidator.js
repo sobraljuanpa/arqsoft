@@ -17,27 +17,28 @@ const dateIsValid = (dateStr) => {
 };
 
 const transactionValidation = (req, res, next) => {
-	const { name, birthdate, country } = req.body;
+	const { name, birthdate, country, transactionId } = req.body;
 
-	if (!name) {
-		sendError(res, 'El nombre es requerido.');
-		return;
-	} else if (!country) {
-		sendError(res, 'El país de origen es requerido.');
-		return;
-	} else if (!birthdate) {
-		sendError(res, 'La fecha de nacimiento es requerida.');
-		return;
-	} else if (!dateIsValid(birthdate)) {
-		sendError(
-			res,
-			'El formato de la fecha de nacimiento es inválido, el formato requerido es YYYY-MM-DD.'
-		);
-		return;
+	if (!transactionId) {
+		if (!name) {
+			sendError(res, 'El nombre es requerido.');
+			return;
+		} else if (!country) {
+			sendError(res, 'El país de origen es requerido.');
+			return;
+		} else if (!birthdate) {
+			sendError(res, 'La fecha de nacimiento es requerida.');
+			return;
+		} else if (!dateIsValid(birthdate)) {
+			sendError(
+				res,
+				'El formato de la fecha de nacimiento es inválido, el formato requerido es YYYY-MM-DD.'
+			);
+			return;
+		}
 	}
 	next();
 };
-
 
 const paymentValidation = (req, res, next) => {
 	const { fullName, cardNumber, birthDate, billingAddress } = req.body;
@@ -72,5 +73,5 @@ const sendError = (res, message) => {
 
 module.exports = {
 	transactionValidation,
-	paymentValidation
+	paymentValidation,
 };

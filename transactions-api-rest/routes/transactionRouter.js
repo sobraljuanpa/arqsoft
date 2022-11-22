@@ -5,6 +5,8 @@ var expressQueue = require('express-queue');
 const fs = require('fs');
 const router = express.Router();
 var jwt = require('jsonwebtoken');
+
+const { getTransactionInfo } = require('../services/transactionService');
 const sessionValidator = require('../middleware/sessionValidator');
 const validationPipeline = require('../middleware/purchaseValidationPipeline');
 const {
@@ -21,7 +23,9 @@ const sessionQueue = expressQueue({ activeLimit: 1, queuedLimit: 100000 });
 
 router.post('/transaction', transactionValidation, async (req, res) => {
 	try {
-		const { name, birthdate, country } = req.body;
+		const { name, birthdate, country, transactionId } = req.body;
+
+		if (transactionId) return getTransactionInfo(transactionId, res);
 
 		const transaction = await Transaction.create({
 			name,
@@ -35,9 +39,10 @@ router.post('/transaction', transactionValidation, async (req, res) => {
 			algorithm: 'RS256',
 		});
 		const response = { sessionToken: token };
-		res.status(201).json(response);
-	} catch (err) {
-		console.log(err);
+		res.status(200).json(response);
+	} catch (error) {
+		console.log(error);
+		res.status(400).send({ status: 400, message: error.message });
 	}
 });
 

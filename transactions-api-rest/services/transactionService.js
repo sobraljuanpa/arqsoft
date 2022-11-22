@@ -28,7 +28,9 @@ const validateAllTransactionsState = async () => {
 				transaction.status != 'Completada'
 			) {
 				if (transaction.status == 'Pendiente de pago') {
-					console.log('Returning stock for failed transaction: ' + transaction._id);
+					console.log(
+						'Returning stock for failed transaction: ' + transaction._id
+					);
 					await updateProductStock(
 						transaction.productId,
 						transaction.supplierEmail,
@@ -43,8 +45,25 @@ const validateAllTransactionsState = async () => {
 	}
 };
 
+const getTransactionInfo = async (transactionId, res) => {
+	try {
+		const transaction = await Transaction.findOne({ _id: transactionId });
+		transaction
+			? res.status(200).send(transaction)
+			: res.status(400).send({ status: 400, message: error.message });
+		return;
+	} catch (error) {
+		return res.status(400).send({
+			status: 400,
+			message:
+				'Ha ocurrido un problema al localizar la transacción solicitada, por favor comuniquese con el administrador.',
+		});
+	}
+};
+
 module.exports = {
 	updateTransactionState,
 	hasExpired,
 	validateAllTransactionsState,
+	getTransactionInfo,
 };
