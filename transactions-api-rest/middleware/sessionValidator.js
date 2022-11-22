@@ -14,39 +14,44 @@ class RestError extends Error {
 	}
 }
 
-const isValidOperation = (transactionStatus, requestedRoute, res) => {
+const isValidOperation = (transactionStatus, requestedRoute) => {
+	let validOperation = {
+		valid: true,
+		message: '',
+	};
 	switch (transactionStatus) {
 		case 'Fallida':
-			sendError(
-				res,
-				'La transacción ha sido Fallida, por favor comience de nuevo.'
-			);
-			return;
+			validOperation = {
+				valid: false,
+				message: 'La transacción ha sido Fallida, por favor comience de nuevo.',
+			};
+
 		case 'Completada':
-			sendError(
-				res,
-				'La transacción ha sido Completada, por favor comience de nuevo.'
-			);
-			return;
+			validOperation = {
+				valid: false,
+				message:
+					'La transacción ha sido Completada, por favor comience de nuevo.',
+			};
 		case 'En proceso':
 			if (requestedRoute != 'purchase' && requestedRoute != 'eventsProducts') {
-				sendError(
-					res,
-					'La operación solicitada no es valida para el estado de la transacción.'
-				);
-				return;
+				validOperation = {
+					valid: false,
+					message:
+						'La operación solicitada no es valida para el estado de la transacción.',
+				};
 			}
 			break;
 		case 'Pendiente de pago':
 			if (requestedRoute != 'payment' && requestedRoute != 'eventsProducts') {
-				sendError(
-					res,
-					'La operación solicitada no es valida para el estado de la transacción.'
-				);
-				return;
+				validOperation = {
+					valid: false,
+					message:
+						'La operación solicitada no es valida para el estado de la transacción.',
+				};
 			}
 			break;
 	}
+	return validOperation;
 };
 
 const verifySession = async (req, res, next) => {
@@ -75,7 +80,14 @@ const verifySession = async (req, res, next) => {
 				}
 				const transactionId = receivedTransaction._id;
 				const transaction = await Transaction.findOne({ _id: transactionId });
-				isValidOperation(transaction.status, requestedRoute, res);
+				const isTransactionValid = isValidOperation(
+					transaction.status,
+					requestedRoute
+				);
+				if (!isTransactionValid.valid) {
+					sendError(res, isTransactionValid.message);
+					return;
+				}
 				req.transaction = transaction;
 				next();
 			}

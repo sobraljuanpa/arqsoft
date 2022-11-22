@@ -10,7 +10,7 @@ const validate_mail = function (input, next) {
 	if (regex.test(input.email)) {
 		next(null, input);
 	} else {
-		return next(Error('El formato del email del proveedor no es válido.'), 400);
+		return next(Error('El formato del email del proveedor no es válido.'));
 	}
 };
 

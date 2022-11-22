@@ -54,38 +54,40 @@ router.get('/eventsProducts/:eventId', sessionValidator, async (req, res) => {
 });
 
 router.post('/purchase', sessionValidator, sessionQueue, async (req, res) => {
-	validationPipeline.execute(req.body, async function (err, result) {
-		if (err) {
-			console.log(err);
-			return;
-		} else {
-			try {
-				const selectedProduct = req.body.product;
-
-				await updateProductStock(
-					selectedProduct.productId,
-					selectedProduct.supplierEmail,
-					selectedProduct.quantity
-				);
-
-				// TODO: Chequear que este retornando el objeto actualizado.
-				// Get transaction and update status and product info.
-				let updatedTransaction = await Transaction.findOneAndUpdate(
-					req.transaction._id,
-					{
-						status: 'Pendiente de pago',
-						productId: selectedProduct.productId,
-						supplierEmail: selectedProduct.supplierEmail,
-						productQuantity: selectedProduct.quantity,
-					},
-					{ returnDocument: 'after', returnOriginal: false }
-				);
-				res.status(200).send(updatedTransaction);
-			} catch (error) {
+	try {
+		validationPipeline.execute(req.body, async function (error, result) {
+			if (error) {
 				res.status(400).send({ status: 400, message: error.message });
+				return;
+			} else {
+				try {
+					const selectedProduct = req.body.product;
+
+					await updateProductStock(
+						selectedProduct.productId,
+						selectedProduct.supplierEmail,
+						selectedProduct.quantity
+					);
+
+					let updatedTransaction = await Transaction.findOneAndUpdate(
+						req.transaction._id,
+						{
+							status: 'Pendiente de pago',
+							productId: selectedProduct.productId,
+							supplierEmail: selectedProduct.supplierEmail,
+							productQuantity: selectedProduct.quantity,
+						},
+						{ returnDocument: 'after', returnOriginal: false }
+					);
+					res.status(200).send(updatedTransaction);
+				} catch (error) {
+					res.status(400).send({ status: 400, message: error.message });
+				}
 			}
-		}
-	});
+		});
+	} catch (error) {
+		res.status(400).send({ status: 400, message: error.message });
+	}
 });
 
 router.post(
@@ -97,8 +99,6 @@ router.post(
 		try {
 			const { fullName, cardNumber, birthDate, billingAddress } = req.body;
 
-			// TODO: Chequear que este retornando el objeto actualizado.
-			// Get transaction and update status and product info.
 			let updatedTransaction = await Transaction.findOneAndUpdate(
 				req.transaction._id,
 				{
