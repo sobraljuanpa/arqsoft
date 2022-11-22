@@ -167,7 +167,6 @@ const updateAllProductsCache = async () => {
 };
 
 const getProductStock = async (supplierEmail, productId) => {
-	console.log(productId);
 	const supplier = await Supplier.findOne({ email: supplierEmail }).exec();
 	const supplierProducts = await getSupplierProducts(supplier.integrationURL);
 	const product = supplierProducts.find((product) => product._id == productId);

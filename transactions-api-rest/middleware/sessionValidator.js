@@ -64,16 +64,18 @@ const verifySession = async (req, res, next) => {
 			async function (err, receivedTransaction) {
 				if (err) {
 					sendError(res, err.message);
-				} else if (hasExpired(receivedTransaction.startDate)) {
+					return;
+				}
+				if (hasExpired(receivedTransaction.startDate)) {
 					updateTransactionState(receivedTransaction._id, 'Fallida');
 					sendError(res, 'La transacción ha sido expirada.');
-				} else {
-					const transactionId = receivedTransaction._id;
-					const transaction = await Transaction.findOne({ _id: transactionId });
-					req.transaction = transaction;
-					isValidOperation(transaction.status, requestedRoute, res);
-					next();
+					return;
 				}
+				const transactionId = receivedTransaction._id;
+				const transaction = await Transaction.findOne({ _id: transactionId });
+				req.transaction = transaction;
+				isValidOperation(transaction.status, requestedRoute, res);
+				next();
 			}
 		);
 	}
