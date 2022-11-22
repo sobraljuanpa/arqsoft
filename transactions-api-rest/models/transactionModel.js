@@ -3,7 +3,7 @@ const PaymentInfo = require('./PaymentInfo');
 
 const transactionSchema = new mongoose.Schema({
 	startDate: {
-		type: String,
+		type: Date,
 		required: false,
 	},
 	name: {
@@ -34,10 +34,14 @@ const transactionSchema = new mongoose.Schema({
 		type: Number,
 		required: false,
 	},
+	eventId: {
+		type: String,
+		required: false,
+	},
 	paymentInfo: {
 		type: PaymentInfo,
 		required: false,
-	},
+	}
 });
 
 mongoose.model('Transaction', transactionSchema);

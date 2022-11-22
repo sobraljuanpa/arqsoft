@@ -19,7 +19,10 @@ const {
 	updateProductStock,
 } = require('../services/productsService');
 
-const sessionQueue = expressQueue({ activeLimit: 1, queuedLimit: process.env.MAX_QUEUED_TRANSACTIONS });
+const sessionQueue = expressQueue({
+	activeLimit: 1,
+	queuedLimit: process.env.MAX_QUEUED_TRANSACTIONS,
+});
 
 router.post('/transaction', transactionValidation, async (req, res) => {
 	try {
@@ -81,8 +84,9 @@ router.post('/purchase', sessionValidator, sessionQueue, async (req, res) => {
 							productId: selectedProduct.productId,
 							supplierEmail: selectedProduct.supplierEmail,
 							productQuantity: selectedProduct.quantity,
+							eventId: selectedProduct.eventId,
 						},
-						{ returnDocument: 'after', returnOriginal: false }
+						{ new: true }
 					);
 					res.status(200).send(updatedTransaction);
 				} catch (error) {
@@ -104,18 +108,24 @@ router.post(
 		try {
 			const { fullName, cardNumber, birthDate, billingAddress } = req.body;
 
+			const hashedCardNumber = crypto
+				.createHash('sha256')
+				.update(cardNumber)
+				.digest('base64');
+
 			let updatedTransaction = await Transaction.findOneAndUpdate(
 				req.transaction._id,
 				{
 					status: 'Completada',
 					paymentInfo: {
 						fullName: fullName,
-						cardNumber: cardNumber, // TODO: Encrypt this.
+						cardNumber: hashedCardNumber,
 						birthDate: birthDate,
 						billingAddress: billingAddress,
+						paymentDate: new Date().toUTCString(),
 					},
 				},
-				{ returnDocument: 'after', returnOriginal: false }
+				{ new: true }
 			);
 			res.status(200).send(updatedTransaction);
 		} catch (error) {

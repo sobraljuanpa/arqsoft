@@ -15,4 +15,8 @@ const paymentInfoSchema = {
 		type: String,
 		required: false,
 	},
+	paymentDate: {
+		type: Date,
+		required: false,
+	},
 };
