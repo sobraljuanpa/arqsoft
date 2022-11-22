@@ -4,6 +4,9 @@ require('./models/Address');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const swaggerUI = require('swagger-ui-express');
+const swaggerFile = require('./transactions-swagger.json');
+
 const app = express();
 const port = 3004;
 const transactionsRoutes = require('./routes/transactionRouter');
@@ -19,6 +22,7 @@ const CACHE_UPDATE_TIME = '600000';
 
 app.use(bodyParser.json());
 app.use(transactionsRoutes);
+app.use('/doc', swaggerUI.serve, swaggerUI.setup(swaggerFile));
 
 main().catch((err) => console.log(err));
 
