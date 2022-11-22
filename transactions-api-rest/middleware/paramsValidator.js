@@ -21,15 +21,19 @@ const transactionValidation = (req, res, next) => {
 
 	if (!name) {
 		sendError(res, 'El nombre es requerido.');
+		return;
 	} else if (!country) {
 		sendError(res, 'El país de origen es requerido.');
+		return;
 	} else if (!birthdate) {
 		sendError(res, 'La fecha de nacimiento es requerida.');
+		return;
 	} else if (!dateIsValid(birthdate)) {
 		sendError(
 			res,
 			'El formato de la fecha de nacimiento es inválido, el formato requerido es YYYY-MM-DD.'
 		);
+		return;
 	}
 	next();
 };
@@ -39,17 +43,22 @@ const paymentValidation = (req, res, next) => {
 	const { fullName, cardNumber, birthDate, billingAddress } = req.body;
 	if (!fullName) {
 		sendError(res, 'El nombre completo es requerido.');
+		return;
 	} else if (!cardNumber) {
 		sendError(res, 'El numero de tarjeta de crédito es requerido.');
+		return;
 	} else if (!birthDate) {
 		sendError(res, 'La fecha de nacimiento es requerida.');
+		return;
 	} else if (!dateIsValid(birthDate)) {
 		sendError(
 			res,
 			'El formato de la fecha de nacimiento es inválido, el formato requerido es YYYY-MM-DD.'
 		);
+		return;
 	} else if (!billingAddress) {
 		sendError(res, 'La dirección de facturación es requerida.');
+		return;
 	}
 	next();
 };

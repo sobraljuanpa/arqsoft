@@ -21,19 +21,20 @@ const isValidOperation = (transactionStatus, requestedRoute, res) => {
 				res,
 				'La transacción ha sido Fallida, por favor comience de nuevo.'
 			);
-			break;
+			return;
 		case 'Completada':
 			sendError(
 				res,
 				'La transacción ha sido Completada, por favor comience de nuevo.'
 			);
-			break;
+			return;
 		case 'En proceso':
 			if (requestedRoute != 'purchase' && requestedRoute != 'eventsProducts') {
 				sendError(
 					res,
 					'La operación solicitada no es valida para el estado de la transacción.'
 				);
+				return;
 			}
 			break;
 		case 'Pendiente de pago':
@@ -42,6 +43,7 @@ const isValidOperation = (transactionStatus, requestedRoute, res) => {
 					res,
 					'La operación solicitada no es valida para el estado de la transacción.'
 				);
+				return;
 			}
 			break;
 	}
@@ -73,8 +75,8 @@ const verifySession = async (req, res, next) => {
 				}
 				const transactionId = receivedTransaction._id;
 				const transaction = await Transaction.findOne({ _id: transactionId });
-				req.transaction = transaction;
 				isValidOperation(transaction.status, requestedRoute, res);
+				req.transaction = transaction;
 				next();
 			}
 		);

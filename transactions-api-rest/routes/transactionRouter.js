@@ -49,47 +49,44 @@ router.get('/eventsProducts/:eventId', sessionValidator, async (req, res) => {
 		const eventProducts = await getProductsByEvent(eventId, country);
 		res.status(200).send(eventProducts);
 	} catch (error) {
-		return res.status(500).send({ error: error.message });
+		return res.status(400).send({ status: 400, message: error.message });
 	}
 });
 
-router.post(
-	'/purchase',
-	sessionValidator,
-	sessionQueue,
-	async (req, res) => {
-		validationPipeline.execute(req.body, async function (err, result) {
-			if (err) {
-				res.status(400).send({ status: 400, message: err.message });
-			} else {
-				try {
-					const selectedProduct = req.body.product;
+router.post('/purchase', sessionValidator, sessionQueue, async (req, res) => {
+	validationPipeline.execute(req.body, async function (err, result) {
+		if (err) {
+			console.log(err);
+			return;
+		} else {
+			try {
+				const selectedProduct = req.body.product;
 
-					await updateProductStock(
-						selectedProduct.productId,
-						selectedProduct.supplierEmail,
-						selectedProduct.quantity
-					);
+				await updateProductStock(
+					selectedProduct.productId,
+					selectedProduct.supplierEmail,
+					selectedProduct.quantity
+				);
 
-					// TODO: Chequear que este retornando el objeto actualizado.
-					// Get transaction and update status and product info.
-					let updatedTransaction = await Transaction.findOneAndUpdate(
-						req.transaction._id,
-						{
-							status: 'Pendiente de pago',
-							productId: selectedProduct.productId,
-							supplierEmail: selectedProduct.supplierEmail,
-							productQuantity: selectedProduct.quantity,
-						}
-					);
-					res.status(200).send(updatedTransaction);
-				} catch (error) {
-					res.status(400).send({ status: 400, message: err.message });
-				}
+				// TODO: Chequear que este retornando el objeto actualizado.
+				// Get transaction and update status and product info.
+				let updatedTransaction = await Transaction.findOneAndUpdate(
+					req.transaction._id,
+					{
+						status: 'Pendiente de pago',
+						productId: selectedProduct.productId,
+						supplierEmail: selectedProduct.supplierEmail,
+						productQuantity: selectedProduct.quantity,
+					},
+					{ returnDocument: 'after', returnOriginal: false }
+				);
+				res.status(200).send(updatedTransaction);
+			} catch (error) {
+				res.status(400).send({ status: 400, message: error.message });
 			}
-		});
-	}
-);
+		}
+	});
+});
 
 router.post(
 	'/payment',
@@ -112,16 +109,12 @@ router.post(
 						birthDate: birthDate,
 						billingAddress: billingAddress,
 					},
-				}
+				},
+				{ returnDocument: 'after', returnOriginal: false }
 			);
 			res.status(200).send(updatedTransaction);
 		} catch (error) {
-			await updateProductStock(
-				req.transaction.productId,
-				req.transaction.supplierEmail,
-				-req.transaction.productQuantity
-			);
-			res.status(400).send({ status: 400, message: err.message });
+			res.status(400).send({ status: 400, message: error.message });
 		}
 	}
 );
