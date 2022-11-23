@@ -3,10 +3,16 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 
+require('../middleware/models/userModel');
+const authMiddleware = require('../middleware/auth/authorization');
 const Transaction = mongoose.model('Transaction');
 
 const router = express.Router();
 // falta endpoint para venta de productos por evento, solo disponible para el proveedor q vendio
+
+//https://dev.to/petrussola/mongoose-and-how-to-group-by-count-5gcm
+//para consultas agrupadas/ordenadas en mongo
+//https://www.mongodb.com/docs/manual/reference/operator/aggregation/group/#group-documents-by-author
 
 // REQ 10
 // endpoint consulta de ventas por evento con esta info 
@@ -15,6 +21,25 @@ const router = express.Router();
 // 3. Tiempo promedio de venta
 // 4. Mejor proveedor (aquel que acumuló la mayor cantidad de productos vendidos)
 // 5. Principal país de venta (aquel que acumuló la mayor cantidad de productos vendidos)
+const getAverageTransactionTime = (transactions) => {
+    let times = [];
+    
+    transactions.forEach(transaction => {
+        let startDate = new Date(transaction.startDate);
+        let paymentDate = new Date(transaction.paymentInfo.paymentDate);
+        let msDiff = paymentDate - startDate;
+        times.push(msDiff / 1000);
+    });
+
+    let sum = times.reduce((partial, aux) => partial + aux, 0);
+
+    return sum / times.length;
+};
+
+router.get('/sales/test', async (req, res) => {
+    const grouped = await Transaction.aggregate([{ $group: {_id: '$country', transactions: { $push: "$$ROOT" }} }]);// es con esta
+    res.status(200).send(grouped);
+});
 
 // REQ 11
 // endpoint comportamiento de evento por paises
@@ -23,10 +48,20 @@ const router = express.Router();
 // 3. Tiempo promedio de venta
 // 4. Mejor proveedor (aquel que acumuló la mayor cantidad de productos vendidos)
 
-// REQ 5.3
-// Ventas de productos para eventos (solo visible para el proveedor que publicó el producto vendido)
+router.get('/sales/event/:eventId', authMiddleware.verifyAdminToken, async (req, res) => {
+    const eventId = req.params.eventId;
+    const transactions = await Transaction.find({ eventId: eventId });
+    const completedTransactions = transactions.filter(t => t.status == 'Completada');
+    const completedPercentage = (completedTransactions.length * 100) / transactions.length;
+    const avgTime = getAverageTransactionTime(completedTransactions);
+    res.status(200).send({
+        'Ventas iniciadas': transactions.length,
+        'Porcentaje de ventas completadas': completedPercentage,
+        'Tiempo promedio de venta (segundos)': avgTime
+    });
+});
 
-//middleware valida el producto es de la persona que mando la req
+// REQ 5.3
 const getProviderFromToken = async (token, req) => {
     const PUBLIC_KEY = fs.readFileSync('./keys/public.key', 'utf8');
 	await jwt.verify(
@@ -43,7 +78,7 @@ const getProviderFromToken = async (token, req) => {
     )
 };
 
-router.get('/sales/:productId', async (req, res) => {
+router.get('/sales/product/:productId', async (req, res) => {
     const token = req.headers['authorization'];
     if (!token) {
         res.status(401).send('Se necesita un token para verificar que es el dueño del producto');
