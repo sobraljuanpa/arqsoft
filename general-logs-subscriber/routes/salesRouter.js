@@ -72,7 +72,7 @@ const buildResponse = (grouped) => {
     const eventTransactions = grouped.filter(t => t._id != null);
     let response = [];
     eventTransactions.forEach(event => {
-        let eventInfo = {}
+        let eventInfo = {};
         eventInfo.eventId = event._id;
         eventInfo.startedTransactions = event.transactions.length;
         completedTransactions = event.transactions.filter(t => t.status == 'Completada'); 
@@ -84,9 +84,8 @@ const buildResponse = (grouped) => {
     return response;
 };
 
-router.get('/sales/events', async (req, res) => {
+router.get('/sales/events', authMiddleware.verifyAdminToken, async (req, res) => {
     const groupedTransactions = await Transaction.aggregate([{ $group: {_id: '$eventId', transactions: { $push: "$$ROOT" }} }]);
-    console.log(groupedTransactions);
     let result = buildResponse(groupedTransactions);
     res.status(200).send(result);
 });
@@ -98,19 +97,28 @@ router.get('/sales/events', async (req, res) => {
 // 3. Tiempo promedio de venta
 // 4. Mejor proveedor (aquel que acumuló la mayor cantidad de productos vendidos)
 
-router.get('/sales/event/:eventId', authMiddleware.verifyAdminToken, async (req, res) => {
-    //TODO agrupar por paises las consultas
-    const eventId = req.params.eventId;
-    const transactions = await Transaction.find({ eventId: eventId });
-    const completedTransactions = transactions.filter(t => t.status == 'Completada');
-    const completedPercentage = (completedTransactions.length * 100) / transactions.length;
-    const avgTime = getAverageTransactionTime(completedTransactions);
-    res.status(200).send({
-        'Ventas iniciadas': transactions.length,
-        'Porcentaje de ventas completadas': completedPercentage,
-        'Tiempo promedio de venta (segundos)': avgTime,
-        'Mejor proveedor': getBestSeller(completedTransactions)
+const buildResponseByCountry = (grouped) => {
+    let response = [];
+    grouped.forEach(country => {
+        let countryInfo = {};
+        countryInfo.country = country._id;
+        countryInfo.startedTransactions = country.transactions.length;
+        completedTransactions = country.transactions.filter(t => t.status == 'Completada');
+        countryInfo.completedPercentage = (completedTransactions.length * 100) / country.transactions.length;
+        countryInfo.bestSeller = getBestSeller(completedTransactions);
+        response.push(countryInfo);
     });
+    return response;
+}
+
+router.get('/sales/events/:eventId', authMiddleware.verifyAdminToken, async (req, res) => {
+    const eventId = req.params.eventId;
+    const transactions = await Transaction.aggregate([
+        { $match: { 'eventId': eventId } },
+        { $group: {_id: '$country', transactions: { $push: "$$ROOT" }} }
+    ]);
+    let result = buildResponseByCountry(transactions);
+    res.status(200).send(result);
 });
 
 // REQ 5.3
