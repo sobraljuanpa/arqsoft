@@ -36,6 +36,38 @@ const getAverageTransactionTime = (transactions) => {
     return sum / times.length;
 };
 
+const getBestSeller = (transactions) => {
+    let sellers = [];
+    transactions.forEach(transaction => {
+        let aux = sellers.find(r => r.email == transaction.supplierEmail);
+        if (aux == undefined) {
+            sellers.push({
+                'email': transaction.supplierEmail,
+                'sales' : transaction.productQuantity
+            });
+        } else {
+            aux.sales += transaction.productQuantity;
+        }
+    });
+    return sellers.sort(function(a, b) { return a.sales - b.sales })[0];
+};
+
+const getBestSellingCountry = (transactions) => {
+    let countries = [];
+    transactions.forEach(transaction => {
+        let aux = countries.find(r => r.country == transaction.country);
+        if (aux == undefined) {
+            countries.push({
+                'country': transaction.country,
+                'sales' : transaction.productQuantity
+            });
+        } else {
+            aux.sales += transaction.productQuantity;
+        }
+    });
+    return countries.sort(function(a, b) { return a.sales - b.sales })[0]
+};
+
 const buildResponse = (grouped) => {
     const eventTransactions = grouped.filter(t => t._id != null);
     let response = [];
@@ -45,7 +77,8 @@ const buildResponse = (grouped) => {
         eventInfo.startedTransactions = event.transactions.length;
         completedTransactions = event.transactions.filter(t => t.status == 'Completada'); 
         eventInfo.completedPercentage = (completedTransactions.length * 100) / event.transactions.length;
-        //hay que hacer el resto en memoria, no me da el cerebro para proseguir
+        eventInfo.bestSeller = getBestSeller(completedTransactions);
+        eventInfo.bestSellingCountry = getBestSellingCountry(completedTransactions);
         response.push(eventInfo);
     });
     return response;
@@ -66,6 +99,7 @@ router.get('/sales/events', async (req, res) => {
 // 4. Mejor proveedor (aquel que acumuló la mayor cantidad de productos vendidos)
 
 router.get('/sales/event/:eventId', authMiddleware.verifyAdminToken, async (req, res) => {
+    //TODO agrupar por paises las consultas
     const eventId = req.params.eventId;
     const transactions = await Transaction.find({ eventId: eventId });
     const completedTransactions = transactions.filter(t => t.status == 'Completada');
@@ -74,7 +108,8 @@ router.get('/sales/event/:eventId', authMiddleware.verifyAdminToken, async (req,
     res.status(200).send({
         'Ventas iniciadas': transactions.length,
         'Porcentaje de ventas completadas': completedPercentage,
-        'Tiempo promedio de venta (segundos)': avgTime
+        'Tiempo promedio de venta (segundos)': avgTime,
+        'Mejor proveedor': getBestSeller(completedTransactions)
     });
 });
 

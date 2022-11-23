@@ -53,6 +53,7 @@ services:
     build: auth-api-rest/.
     depends_on:
       - mongo
+      - redis
     ports:
       - "3002:3002"
     networks:
@@ -77,6 +78,7 @@ services:
     build: general-logs-subscriber/.
     depends_on:
       - redis
+      - mongo
     ports:
       - "3003:3003"
     networks:
