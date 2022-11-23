@@ -36,9 +36,26 @@ const getAverageTransactionTime = (transactions) => {
     return sum / times.length;
 };
 
-router.get('/sales/test', async (req, res) => {
-    const grouped = await Transaction.aggregate([{ $group: {_id: '$country', transactions: { $push: "$$ROOT" }} }]);// es con esta
-    res.status(200).send(grouped);
+const buildResponse = (grouped) => {
+    const eventTransactions = grouped.filter(t => t._id != null);
+    let response = [];
+    eventTransactions.forEach(event => {
+        let eventInfo = {}
+        eventInfo.eventId = event._id;
+        eventInfo.startedTransactions = event.transactions.length;
+        completedTransactions = event.transactions.filter(t => t.status == 'Completada'); 
+        eventInfo.completedPercentage = (completedTransactions.length * 100) / event.transactions.length;
+        //hay que hacer el resto en memoria, no me da el cerebro para proseguir
+        response.push(eventInfo);
+    });
+    return response;
+};
+
+router.get('/sales/events', async (req, res) => {
+    const groupedTransactions = await Transaction.aggregate([{ $group: {_id: '$eventId', transactions: { $push: "$$ROOT" }} }]);
+    console.log(groupedTransactions);
+    let result = buildResponse(groupedTransactions);
+    res.status(200).send(result);
 });
 
 // REQ 11
