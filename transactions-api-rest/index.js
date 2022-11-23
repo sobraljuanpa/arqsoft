@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const swaggerUI = require('swagger-ui-express');
 const swaggerFile = require('./transactions-swagger.json');
+const activityMiddleware = require('./sharedMiddleware/logs/activity');
 const config = process.env;
 
 const app = express();
@@ -21,6 +22,7 @@ const {
 } = require('./services/transactionService');
 
 app.use(bodyParser.json());
+app.use(activityMiddleware.logActivity);
 app.use(transactionsRoutes);
 app.use('/doc', swaggerUI.serve, swaggerUI.setup(swaggerFile));
 

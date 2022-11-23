@@ -5,6 +5,7 @@ var expressQueue = require('express-queue');
 const fs = require('fs');
 const router = express.Router();
 var jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 const { getTransactionInfo } = require('../services/transactionService');
 const sessionValidator = require('../middleware/sessionValidator');
