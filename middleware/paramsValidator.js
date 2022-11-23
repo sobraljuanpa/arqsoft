@@ -13,11 +13,7 @@ const isRoleValid = (role) => {
 };
 
 const userExists = async (userEmail) => {
-	// Validate if user exist in our database
-	console.log(userEmail);
 	const oldUser = await User.findOne({ email: userEmail });
-	console.log(oldUser);
-	console.log(oldUser!=null);
 	if (oldUser != null) {
 		return true;
 	} else {
@@ -49,7 +45,6 @@ const registerValidation = async (req, res, next) => {
 		sendError(res, 'La contraseña es requerida.');
 		return;
 	} else if (await userExists(email)) {
-		console.log('entre')
 		sendError(res, 'Este email ya esta siendo utilizado');
 		return;
 	} else {
