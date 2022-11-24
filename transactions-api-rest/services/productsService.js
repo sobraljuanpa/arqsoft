@@ -50,7 +50,10 @@ const getSupplierProducts = async (integrationUrl) => {
 
 const sortProductsByEvent = (products) => {
 	const sortedProducts = products.sort((a, b) => {
-		return a.eventId - b.eventId;
+		return a.eventId.localeCompare(b.eventId, undefined, {
+			numerid: true,
+			sensitivity: 'base',
+		});
 	});
 	return sortedProducts;
 };
