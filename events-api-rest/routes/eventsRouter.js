@@ -92,9 +92,7 @@ function getEnabledModifiedEventFields(request) {
 	return params;
 }
 
-// Put para modificacion de todos los campos menos creator y enabled
 router.put('/events/:id', authMiddleware.verifyAdminToken, async (req, res) => {
-	// tendria que tener un try catch y levantar un 500 en el catch nomas
 	try {
 		if (req.body.enabled) {
 			res.status(400).send({
@@ -150,7 +148,6 @@ async function approvingUserIsNotCreator(eventId, approver) {
 	return creator != approver;
 }
 
-// Patch para aprobacion unicamente, facilita el tema de loggeo
 router.patch(
 	'/events/:id',
 	authMiddleware.verifyAdminToken,

@@ -1,3 +1,4 @@
+require('dotenv').config();
 require('./models/Supplier');
 require('./models/eventModel');
 const express = require('express');
@@ -9,12 +10,13 @@ const swaggerFile = require('./events-swagger.json');
 const eventsRoutes = require('./routes/eventsRouter');
 const activityMiddleware = require('./middleware/logs/activity');
 const eventsMiddleware = require('./middleware/logs/events');
+const config = process.env;
 
 const app = express();
-const port = 3000;
-// configuro middleware
+const port = config.DEPLOY_PORT;
+
 app.use(bodyParser.json());
-app.use(activityMiddleware.logActivity); //importante configurar middleware antes de las rutas si no se lo saltea
+app.use(activityMiddleware.logActivity);
 app.use(eventsMiddleware.logEventUpdate);
 app.use(eventsMiddleware.logEventPublishing);
 app.use(eventsRoutes);
@@ -24,7 +26,7 @@ main().catch((err) => console.log(err));
 
 async function main() {
 	await mongoose
-		.connect('mongodb://mongo:27017/test')
+		.connect(config.MONGO_URL)
 		.then(() => console.log('Connected to mongo instance'));
 
 	app.listen(port, () => {
