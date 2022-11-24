@@ -79,7 +79,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"first_name\": \"provider\",\r\n    \"last_name\": \"provider\",\r\n    \"email\": \"provider\",\r\n    \"password\": \"provider\",\r\n    \"role\": \"provider\"\r\n}",
+							"raw": "{\r\n    \"first_name\": \"provider\",\r\n    \"last_name\": \"provider\",\r\n    \"email\": \"provider\",\r\n    \"password\": \"provider\",\r\n    \"role\": \"proveedor\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -659,15 +659,47 @@
 							"name": "Get sales by productId",
 							"request": {
 								"method": "GET",
-								"header": [],
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{providerUserToken}}",
+										"type": "default"
+									}
+								],
 								"url": {
-									"raw": "{{logsBaseURL}}/sales/637d48347df646c481bbcd5d",
+									"raw": "{{logsBaseURL}}/sales/product/637d48347df646c481bbcd5d",
 									"host": [
 										"{{logsBaseURL}}"
 									],
 									"path": [
 										"sales",
+										"product",
 										"637d48347df646c481bbcd5d"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get sale stats by event",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "authorization",
+										"value": "{{adminUserToken}}",
+										"type": "default"
+									}
+								],
+								"url": {
+									"raw": "{{logsBaseURL}}/sales/events/637a92a5cc66b492d4841ca6",
+									"host": [
+										"{{logsBaseURL}}"
+									],
+									"path": [
+										"sales",
+										"events",
+										"637a92a5cc66b492d4841ca6"
 									]
 								}
 							},
@@ -813,6 +845,52 @@
 							"path": [
 								"audit",
 								"forbidden"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Event Update logs",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "authorization",
+								"value": "{{providerUserToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{logsBaseURL}}/events/updates?since=2022-01-01&until=2023-01-01",
+							"host": [
+								"{{logsBaseURL}}"
+							],
+							"path": [
+								"events",
+								"updates"
+							],
+							"query": [
+								{
+									"key": "since",
+									"value": "2022-01-01"
+								},
+								{
+									"key": "until",
+									"value": "2023-01-01"
+								}
 							]
 						}
 					},

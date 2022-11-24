@@ -16,6 +16,26 @@ class RestError extends Error {
 	}
 }
 
+//https://mongoosejs.com/docs/tutorials/dates.html
+
+const getEventsByDateRange = async (document, requestBody) => {
+	console.log(requestBody);
+	if (requestBody?.since) {
+		if (requestBody.until) {
+			console.log(requestBody.since);
+			console.log(requestBody.until);
+			return await document.find({ timestamp: { $gte: requestBody.since, $lte: requestBody.until } }).lean();
+		} else {
+			console.log(requestBody.since);
+			return await document.find({ timestamp: { $gte: requestBody.since} }).lean();
+		}
+	} else if (requestBody?.until) {
+		return await document.find({ timestamp: { $lte: requestBody.until } }).lean();
+	} else {
+		return await document.find().lean();
+	}
+}
+
 // REQ 5
 router.get('/events/approvals', authMiddleware.verifyProviderToken,  async (req, res) => {
 	try {
@@ -28,7 +48,7 @@ router.get('/events/approvals', authMiddleware.verifyProviderToken,  async (req,
 
 router.get('/events/updates', authMiddleware.verifyProviderToken, async (req, res) => {
 	try {
-		let events = await EventUpdateLog.find().lean();
+		let events = await getEventsByDateRange(EventUpdateLog, req.query);
 		res.status(200).send(events);
 	} catch (error) {
 		return res.status(500).send({ error: error.message });
