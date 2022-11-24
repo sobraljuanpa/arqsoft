@@ -1,3 +1,4 @@
+require('dotenv').config()
 require('./models/userModel');
 const express = require('express');
 const mongoose = require('mongoose');
@@ -6,7 +7,7 @@ const swaggerUI = require('swagger-ui-express');
 const swaggerFile = require('./auth-swagger.json');
 
 const app = express();
-const port = 3002;
+const port = process.env.DEPLOY_PORT;
 const authRoutes = require('./routes/authRouter');
 const activityMiddleware = require('./middleware/logs/activity');
 
