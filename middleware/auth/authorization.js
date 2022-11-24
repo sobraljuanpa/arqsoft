@@ -29,7 +29,7 @@ const verifyAdminToken = async (req, res, next) => {
 				req.user = user;
 				email = user.email;
 				const newUser = await User.findOne({ email });
-				if ('admin' != newUser?.role) {
+				if ('administrador' != newUser?.role) {
 					return res.status(403).send('Usuario no tiene rol de administrador');
 				}
 				next();
@@ -56,7 +56,7 @@ const verifyProviderToken = async (req, res, next) => {
 				req.user = user;
 				email = user.email;
 				const newUser = await User.findOne({ email });
-				if ('provider' != newUser.role) {
+				if ('proveedor' != newUser.role) {
 					return res.status(403).send('Usuario no tiene rol de proveedor');
 				}
 				next();

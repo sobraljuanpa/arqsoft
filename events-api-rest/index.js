@@ -3,6 +3,8 @@ require('./models/eventModel');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const swaggerUI = require('swagger-ui-express');
+const swaggerFile = require('./events-swagger.json');
 
 const eventsRoutes = require('./routes/eventsRouter');
 const activityMiddleware = require('./middleware/logs/activity');
@@ -16,6 +18,7 @@ app.use(activityMiddleware.logActivity); //importante configurar middleware ante
 app.use(eventsMiddleware.logEventUpdate);
 app.use(eventsMiddleware.logEventPublishing);
 app.use(eventsRoutes);
+app.use('/doc', swaggerUI.serve, swaggerUI.setup(swaggerFile));
 
 main().catch((err) => console.log(err));
 

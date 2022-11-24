@@ -17,8 +17,9 @@
 		"jsonwebtoken": "^8.5.1",
 		"mongoose": "6.6.4",
 		"nodemon": "^2.0.4",
-		"underscore": "^1.10.2",
 		"valid-url": "^1.0.9",
-		"dotenv": "^16.0.3"
+		"dotenv": "^16.0.3",
+		"swagger-ui-express": "^4.6.0",
+		"underscore": "^1.10.2"
 	}
 }
