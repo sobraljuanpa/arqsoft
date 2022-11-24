@@ -9,7 +9,7 @@ const swaggerFile = require('./auth-swagger.json');
 const app = express();
 const port = process.env.DEPLOY_PORT;
 const authRoutes = require('./routes/authRouter');
-const activityMiddleware = require('./middleware/logs/activity');
+const activityMiddleware = require('./utils/logs/activity');
 
 app.use(bodyParser.json());
 app.use(activityMiddleware.logActivity);

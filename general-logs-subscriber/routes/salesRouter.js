@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 
-require('../middleware/models/userModel');
-const authMiddleware = require('../middleware/auth/authorization');
+require('../utils/models/userModel');
+const authMiddleware = require('../utils/auth/authorization');
 const Transaction = mongoose.model('Transaction');
 
 const router = express.Router();

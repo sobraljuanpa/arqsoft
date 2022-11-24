@@ -12,22 +12,12 @@ const isRoleValid = (role) => {
 	return validRoles.includes(role);
 };
 
-const validateUserExistance = async (userEmail) => {
-	// Validate if user exist in our database
-	const oldUser = await User.findOne({ userEmail });
-
-	if (oldUser) {
-		return res.status(409).send('Este email ya esta siendo utilizado');
-	}
-};
-
-const validateEmailAndPassword = async (email, password, res) => {
-	if (!email) {
-		sendError(res, 'El email es requerido.');
-	} else if (!isMailValid(email)) {
-		sendError(res, 'El formato del email del proveedor no es válido.');
-	} else if (!password) {
-		sendError(res, 'La contraseña es requerida.');
+const userExists = async (userEmail) => {
+	const oldUser = await User.findOne({ email: userEmail });
+	if (oldUser != null) {
+		return true;
+	} else {
+		return false;
 	}
 };
 
@@ -35,22 +25,46 @@ const registerValidation = async (req, res, next) => {
 	const { first_name, last_name, email, password, role } = req.body;
 	if (!first_name) {
 		sendError(res, 'El nombre es requerido.');
+		return;
 	} else if (!last_name) {
-        sendError(res, 'El apellido es requerido.');
-	}
-	if (!role) {
+		sendError(res, 'El apellido es requerido.');
+		return;
+	} else if (!role) {
 		sendError(res, 'El rol es requerido.');
+		return;
 	} else if (!isRoleValid(role)) {
-        sendError(res, 'El rol ingresado no es válido.');
+		sendError(res, 'El rol ingresado no es válido.');
+		return;
+	} else if (!email) {
+		sendError(res, 'El email es requerido.');
+		return;
+	} else if (!isMailValid(email)) {
+		sendError(res, 'El formato del email del proveedor no es válido.');
+		return;
+	} else if (!password) {
+		sendError(res, 'La contraseña es requerida.');
+		return;
+	} else if (await userExists(email)) {
+		sendError(res, 'Este email ya esta siendo utilizado');
+		return;
+	} else {
+		next();
 	}
-	await validateEmailAndPassword(email, password, res);
-	await validateUserExistance(email, res);
-	next();
 };
 
 const loginValidation = async (req, res, next) => {
-    const { email, password } = req.body;
-    await validateEmailAndPassword(email, password, res);
+	const { email, password } = req.body;
+	if (!email) {
+		sendError(res, 'El email es requerido.');
+		return;
+	} else if (!isMailValid(email)) {
+		sendError(res, 'El formato del email del proveedor no es válido.');
+		return;
+	} else if (!password) {
+		sendError(res, 'La contraseña es requerida.');
+		return;
+	}
+	next();
 };
 
 const sendError = (res, message) => {
@@ -58,7 +72,6 @@ const sendError = (res, message) => {
 		status: 400,
 		message: message,
 	});
-	return;
 };
 
 module.exports = { registerValidation, loginValidation };

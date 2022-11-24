@@ -8,7 +8,6 @@ const supplierRoutes = require('./routes/suppliersRoutes');
 const port =  process.env.DEPLOY_PORT;
 const swaggerUI = require('swagger-ui-express');
 const swaggerFile = require('./suppliers-swagger.json');
-const supplierRoutes = require('./routes/suppliersRoutes');
 
 const app = express();
 

@@ -2,8 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Event = mongoose.model('Event');
 const router = express.Router();
-require('../middleware/models/userModel');
-const authMiddleware = require('../middleware/auth/authorization');
+require('../utils/models/userModel');
+const authMiddleware = require('../utils/auth/authorization');
 
 class RestError extends Error {
 	constructor(message, status) {

@@ -13,7 +13,7 @@ const EventPublishingLog = mongoose.model('EventPublishingLog');
 const EventUpdateLog = mongoose.model('EventUpdateLog');
 const logsRoutes = require('./routes/logsRouter');
 const salesRoutes = require('./routes/salesRouter');
-const activityMiddleware = require('./middleware/logs/activity');
+const activityMiddleware = require('./utils/logs/activity');
 
 const config = process.env;
 const port = config.DEPLOY_PORT;

@@ -6,8 +6,8 @@ const EventUpdateLog = mongoose.model('EventUpdateLog');
 const EventPublishingLog = mongoose.model('EventPublishingLog');
 const RequestLog = mongoose.model('RequestLog');
 
-require('../middleware/models/userModel');
-const authMiddleware = require('../middleware/auth/authorization');
+require('../utils/models/userModel');
+const authMiddleware = require('../utils/auth/authorization');
 
 const getEventsByDateRange = async (document, requestBody) => {
 	if (requestBody?.since) {

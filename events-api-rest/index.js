@@ -8,8 +8,8 @@ const swaggerUI = require('swagger-ui-express');
 const swaggerFile = require('./events-swagger.json');
 
 const eventsRoutes = require('./routes/eventsRouter');
-const activityMiddleware = require('./middleware/logs/activity');
-const eventsMiddleware = require('./middleware/logs/events');
+const activityMiddleware = require('./utils/logs/activity');
+const eventsMiddleware = require('./utils/logs/events');
 const config = process.env;
 
 const app = express();
