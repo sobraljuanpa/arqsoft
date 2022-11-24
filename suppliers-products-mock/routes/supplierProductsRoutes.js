@@ -61,10 +61,8 @@ router.put('/supplier/:id/products/:productId', async (req, res) => {
 	try {
 		const id = req.params.id - 1;
 		const productId = req.params.productId;
-        console.log(productId)
 		let productToUpdate = await SupplierProducts[id].findById(productId).lean();
 		const newStock = productToUpdate.stock - req.query.stock;
-		console.log(productToUpdate);
 		productToUpdate.stock = newStock;
 
 		let updatedProduct = await SupplierProducts[id].findOneAndUpdate(

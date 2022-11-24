@@ -8,19 +8,7 @@ const authMiddleware = require('../middleware/auth/authorization');
 const Transaction = mongoose.model('Transaction');
 
 const router = express.Router();
-// falta endpoint para venta de productos por evento, solo disponible para el proveedor q vendio
 
-//https://dev.to/petrussola/mongoose-and-how-to-group-by-count-5gcm
-//para consultas agrupadas/ordenadas en mongo
-//https://www.mongodb.com/docs/manual/reference/operator/aggregation/group/#group-documents-by-author
-
-// REQ 10
-// endpoint consulta de ventas por evento con esta info
-// 1. Cantidad de ventas iniciadas
-// 2. Porcentaje de ventas concretadas
-// 3. Tiempo promedio de venta
-// 4. Mejor proveedor (aquel que acumuló la mayor cantidad de productos vendidos)
-// 5. Principal país de venta (aquel que acumuló la mayor cantidad de productos vendidos)
 const getAverageTransactionTime = (transactions) => {
 	let times = [];
 
@@ -84,6 +72,8 @@ const buildResponse = (grouped) => {
 		);
 		eventInfo.completedPercentage =
 			(completedTransactions.length * 100) / event.transactions.length;
+		const averageTime = getAverageTransactionTime(completedTransactions);
+		eventInfo.averageTransactionTime = `${averageTime} seconds`;
 		eventInfo.bestSeller = getBestSeller(completedTransactions);
 		eventInfo.bestSellingCountry = getBestSellingCountry(completedTransactions);
 		response.push(eventInfo);
@@ -103,13 +93,6 @@ router.get(
 	}
 );
 
-// REQ 11
-// endpoint comportamiento de evento por paises
-// 1. Cantidad de ventas iniciadas
-// 2. Porcentaje de ventas concretadas
-// 3. Tiempo promedio de venta
-// 4. Mejor proveedor (aquel que acumuló la mayor cantidad de productos vendidos)
-
 const buildResponseByCountry = (grouped) => {
 	let response = [];
 	grouped.forEach((country) => {
@@ -121,6 +104,8 @@ const buildResponseByCountry = (grouped) => {
 		);
 		countryInfo.completedPercentage =
 			(completedTransactions.length * 100) / country.transactions.length;
+		const averageTime = getAverageTransactionTime(completedTransactions);
+		eventInfo.averageTransactionTime = `${averageTime} seconds`;
 		countryInfo.bestSeller = getBestSeller(completedTransactions);
 		response.push(countryInfo);
 	});
@@ -141,7 +126,6 @@ router.get(
 	}
 );
 
-// REQ 5.3
 const getProviderFromToken = async (token, req) => {
 	const PUBLIC_KEY = fs.readFileSync('./keys/public.key', 'utf8');
 	await jwt.verify(
@@ -161,9 +145,11 @@ const getProviderFromToken = async (token, req) => {
 router.get('/sales/product/:productId', async (req, res) => {
 	const token = req.headers['authorization'];
 	if (!token) {
-		res
-			.status(401)
-			.send('Se necesita un token para verificar que es el dueño del producto');
+		res.status(401).send({
+			status: 401,
+			message:
+				'Se necesita un token para verificar que es el dueño del producto',
+		});
 	} else {
 		const productId = req.params.productId;
 		let transactions = await Transaction.find({
@@ -173,15 +159,17 @@ router.get('/sales/product/:productId', async (req, res) => {
 		await getProviderFromToken(token, req);
 		try {
 			if (transactions.length == 0) {
-				res
-					.status(404)
-					.send(`No hay ventas para el producto con id ${productId}`);
+				res.status(404).send({
+					status: 404,
+					message: `No hay ventas para el producto con id ${productId}`,
+				});
 			} else if (req.user.email != transactions[0].supplierEmail) {
 				res
 					.status(403)
-					.send(
-						`El usuario autenticado no es el dueño del producto con id ${productId}`
-					);
+					.send({
+						status: 403,
+						message: `El usuario autenticado no es el dueño del producto con id ${productId}`,
+					});
 			} else {
 				res.status(200).send(transactions);
 			}

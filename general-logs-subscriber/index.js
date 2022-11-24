@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 require('./models/requestLog');
@@ -14,14 +15,18 @@ const logsRoutes = require('./routes/logsRouter');
 const salesRoutes = require('./routes/salesRouter');
 const activityMiddleware = require('./middleware/logs/activity');
 
+const config = process.env;
+const port = config.DEPLOY_PORT;
+
 // Redis
 const redis = require('redis');
 const client = redis.createClient({
 	socket: {
-		host: 'redis',
-		port: 6379,
+		host: config.REDIS_HOST,
+		port: config.REDIS_PORT,
 	},
 });
+
 const subscriber = client.duplicate();
 subscriber.connect();
 
@@ -69,10 +74,10 @@ main().catch((err) => console.log(err));
 
 async function main() {
 	await mongoose
-		.connect('mongodb://mongo:27017/test')
+		.connect(config.MONGO_URL)
 		.then(() => console.log('Connected to mongo instance'));
 
-	app.listen(3003, () => {
+	app.listen(port, () => {
 		console.log('server is listening to port 3003');
 	});
 }

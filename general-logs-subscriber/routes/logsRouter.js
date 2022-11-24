@@ -9,15 +9,6 @@ const RequestLog = mongoose.model('RequestLog');
 require('../middleware/models/userModel');
 const authMiddleware = require('../middleware/auth/authorization');
 
-class RestError extends Error {
-	constructor(message, status) {
-		super(message);
-		this.status = status;
-	}
-}
-
-//https://mongoosejs.com/docs/tutorials/dates.html
-
 const getEventsByDateRange = async (document, requestBody) => {
 	if (requestBody?.since) {
 		if (requestBody.until) {
@@ -43,7 +34,6 @@ const getEventsByDateRange = async (document, requestBody) => {
 	}
 };
 
-// REQ 5
 router.get(
 	'/events/approvals',
 	authMiddleware.verifyProviderToken,
@@ -52,7 +42,7 @@ router.get(
 			let events = await getEventsByDateRange(EventPublishingLog, req.query);
 			res.status(200).send(events);
 		} catch (error) {
-			return res.status(500).send({ error: error.message });
+			return res.status(400).send({ status: 400, message: error.message });
 		}
 	}
 );
@@ -65,22 +55,20 @@ router.get(
 			let events = await getEventsByDateRange(EventUpdateLog, req.query);
 			res.status(200).send(events);
 		} catch (error) {
-			return res.status(500).send({ error: error.message });
+			return res.status(400).send({ status: 400, message: error.message });
 		}
 	}
 );
 
-// REQ 12
-// endpoint actividad
 router.get('/activity', authMiddleware.verifyAdminToken, async (req, res) => {
 	try {
 		let requests = await RequestLog.find().lean();
 		res.status(200).send(requests);
 	} catch (error) {
-		return res.status(500).send({ error: error.message });
+		return res.status(400).send({ status: 400, message: error.message });
 	}
 });
-// endpoint actividad por mail de usuario
+
 router.get(
 	'/activity/:actorId',
 	authMiddleware.verifyAdminToken,
@@ -90,12 +78,11 @@ router.get(
 			let requests = await RequestLog.find({ actor: id }).lean();
 			res.status(200).send(requests);
 		} catch (error) {
-			return res.status(500).send({ error: error.message });
+			return res.status(400).send({ status: 400, message: error.message });
 		}
 	}
 );
-// REQ 15
-// endpoint registro
+
 router.get(
 	'/audit/register',
 	authMiddleware.verifyAdminToken,
@@ -104,11 +91,11 @@ router.get(
 			let requests = await RequestLog.find({ url: '/register' }).lean();
 			res.status(200).send(requests);
 		} catch (error) {
-			return res.status(500).send({ error: error.message });
+			return res.status(400).send({ status: 400, message: error.message });
 		}
 	}
 );
-// endpoint logines
+
 router.get(
 	'/audit/login',
 	authMiddleware.verifyAdminToken,
@@ -117,12 +104,11 @@ router.get(
 			let requests = await RequestLog.find({ url: '/login' }).lean();
 			res.status(200).send(requests);
 		} catch (error) {
-			return res.status(500).send({ error: error.message });
+			return res.status(400).send({ status: 400, message: error.message });
 		}
 	}
 );
-// endpoint accesos no autorizados
-//401 Unauthorized
+
 router.get(
 	'/audit/unauthorized',
 	authMiddleware.verifyAdminToken,
@@ -131,11 +117,11 @@ router.get(
 			let requests = await RequestLog.find({ statusCode: 401 }).lean();
 			res.status(200).send(requests);
 		} catch (error) {
-			return res.status(500).send({ error: error.message });
+			return res.status(400).send({ status: 400, message: error.message });
 		}
 	}
 );
-//403 Forbidden
+
 router.get(
 	'/audit/forbidden',
 	authMiddleware.verifyAdminToken,
@@ -144,7 +130,7 @@ router.get(
 			let requests = await RequestLog.find({ statusCode: 403 }).lean();
 			res.status(200).send(requests);
 		} catch (error) {
-			return res.status(500).send({ error: error.message });
+			return res.status(400).send({ status: 400, message: error.message });
 		}
 	}
 );
