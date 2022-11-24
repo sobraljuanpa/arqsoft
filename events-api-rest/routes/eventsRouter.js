@@ -26,14 +26,18 @@ router.get('/events', async (req, res) => {
 });
 
 router.post('/events', authMiddleware.verifyAdminToken, async (req, res) => {
-	let event = new Event(
-		({ name, description, startDate, endDate, country, city } = req.body)
-	);
-	event.creator = req.user.email;
-	event.enabled = false;
-
-	const createdEvent = await event.save();
-	res.status(201).send(createdEvent);
+	try{
+		let event = new Event(
+			({ name, description, startDate, endDate, country, city } = req.body)
+		);
+		event.creator = req.user.email;
+		event.enabled = false;
+	
+		const createdEvent = await event.save();
+		res.status(201).send(createdEvent);
+	} catch (error) {
+		return res.status(500).send({ status: 500, message: error.message });
+	}
 });
 
 router.get('/events/:id', async (req, res) => {
@@ -110,7 +114,7 @@ router.put('/events/:id', authMiddleware.verifyAdminToken, async (req, res) => {
 			if (event.enabled) {
 				if (validPUTRequestBody(req)) {
 					let eventFields = getEnabledModifiedEventFields(req);
-					let updatedEvent = await Event.findOneAndUpdate(id, eventFields, {
+					let updatedEvent = await Event.findOneAndUpdate({_id: id}, eventFields, {
 						new: true,
 					});
 					res.status(200).send(updatedEvent);
@@ -123,7 +127,7 @@ router.put('/events/:id', authMiddleware.verifyAdminToken, async (req, res) => {
 				}
 			} else {
 				let eventFields = getDisabledModifiedEventFields(req);
-				let updatedEvent = await Event.findOneAndUpdate(id, eventFields, {
+				let updatedEvent = await Event.findOneAndUpdate({_id: id}, eventFields, {
 					new: true,
 				});
 				res.status(200).send(updatedEvent);
@@ -157,7 +161,7 @@ router.patch(
 			let paramsToUpdate = {};
 			if (await approvingUserIsNotCreator(id, req.user.email)) {
 				paramsToUpdate.enabled = req.body.enabled;
-				let updatedEvent = await Event.findOneAndUpdate(id, paramsToUpdate, {
+				let updatedEvent = await Event.findOneAndUpdate({_id: id}, paramsToUpdate, {
 					new: true,
 				});
 				res.status(200).send(updatedEvent);

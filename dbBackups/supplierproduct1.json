@@ -1,0 +1,99 @@
+[{
+  "_id": {
+    "$oid": "637d48347df646c481bbcd5d"
+  },
+  "name": "1 Partido (proveedor 5)",
+  "description": "Viaja al partido de uruguay en qatar",
+  "cost": 10000,
+  "informationUrl": "",
+  "eventId": "637d46051b7f3f28e13fffdb",
+  "validityDate": "2020/11/30",
+  "stock": 9,
+  "supplierEmail": "fede1@fede.com",
+  "country": "Uruguay",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "637d48347df646c481bbcd5f"
+  },
+  "name": "2 Partidos (proveedor 5)",
+  "description": "Viaja a los dos partidos de uruguay en qatar",
+  "cost": 10000,
+  "informationUrl": "",
+  "eventId": "637d46051b7f3f28e13fffdb",
+  "validityDate": "2020/11/30",
+  "stock": 15,
+  "supplierEmail": "fede1@fede.com",
+  "country": "Uruguay",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "637d48347df646c481bbcd61"
+  },
+  "name": "3 Partidos (proveedor 5)",
+  "description": "Viaja a los tres partidos de uruguay en qatar",
+  "cost": 10000,
+  "informationUrl": "",
+  "eventId": "637d46051b7f3f28e13fffdb",
+  "validityDate": "2020/11/30",
+  "stock": 15,
+  "supplierEmail": "fede1@fede.com",
+  "country": "Uruguay",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "637fe678231eedeca17c80f3"
+  },
+  "name": "1 Entrada (proveedor 1)",
+  "description": "Buenos muchachos general",
+  "cost": 10000,
+  "informationUrl": "",
+  "eventId": "637fe220181758f89ad669a9",
+  "validityDate": "2022-12-06",
+  "stock": 15,
+  "supplierEmail": "fede1@fede.com",
+  "country": "Uruguay",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "637fe678231eedeca17c80f5"
+  },
+  "name": "2 Entradas (proveedor 1)",
+  "description": "Buenos muchachos platea",
+  "cost": 10000,
+  "informationUrl": "",
+  "eventId": "637fe220181758f89ad669a9",
+  "validityDate": "2022-12-06",
+  "stock": 15,
+  "supplierEmail": "fede1@fede.com",
+  "country": "Uruguay",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "637fe678231eedeca17c80f7"
+  },
+  "name": "3 Entradas (proveedor 1)",
+  "description": "Buenos muchachos backstage pass",
+  "cost": 10000,
+  "informationUrl": "",
+  "eventId": "637fe220181758f89ad669a9",
+  "validityDate": "2022-12-06",
+  "stock": 15,
+  "supplierEmail": "fede1@fede.com",
+  "country": "Uruguay",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "637fe69c231eedeca17c80f9"
+  },
+  "name": "1 Entrada (proveedor 2)",
+  "description": "Buenos muchachos general",
+  "cost": 10000,
+  "informationUrl": "",
+  "eventId": "637fe220181758f89ad669a9",
+  "validityDate": "2022-12-06",
+  "stock": 15,
+  "supplierEmail": "fede2@fede.com",
+  "country": "Uruguay",
+  "__v": 0
+}]

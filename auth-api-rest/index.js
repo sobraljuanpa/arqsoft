@@ -20,7 +20,7 @@ main().catch((err) => console.log(err));
 
 async function main() {
 	await mongoose
-		.connect('mongodb://mongo:27017/test')
+		.connect('mongodb://mongo:27017/qEvents')
 		.then(() => console.log('Connected to mongo instance'));
 
 	app.listen(port, () => {

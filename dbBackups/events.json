@@ -1,0 +1,85 @@
+[{
+  "_id": {
+    "$oid": "637fe220181758f89ad669a9"
+  },
+  "name": "Buenos muchachos en la trastienda",
+  "description": "tocan los buenos",
+  "startDate": {
+    "$date": {
+      "$numberLong": "1670284800000"
+    }
+  },
+  "endDate": {
+    "$date": {
+      "$numberLong": "1670284800000"
+    }
+  },
+  "country": "Uruguay",
+  "city": "Montevideo",
+  "creator": "admin@admin.admin",
+  "enabled": true,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "637fe2b8d14913c4e4b7d774"
+  },
+  "name": "Buitres en la trastienda",
+  "description": "tocan los buitres",
+  "startDate": {
+    "$date": {
+      "$numberLong": "1670371200000"
+    }
+  },
+  "endDate": {
+    "$date": {
+      "$numberLong": "1670371200000"
+    }
+  },
+  "country": "Uruguay",
+  "city": "Montevideo",
+  "creator": "admin@admin.admin",
+  "enabled": true,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "637fe2e5d14913c4e4b7d779"
+  },
+  "name": "Tan bionica en el luna park",
+  "description": "toca chano",
+  "startDate": {
+    "$date": {
+      "$numberLong": "1670371200000"
+    }
+  },
+  "endDate": {
+    "$date": {
+      "$numberLong": "1670371200000"
+    }
+  },
+  "country": "Argentina",
+  "city": "Buenos Aires",
+  "creator": "admin@admin.admin",
+  "enabled": true,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "637fe305d14913c4e4b7d77c"
+  },
+  "name": "Marcelo D2 en rock in rio",
+  "description": "Toca marcelo",
+  "startDate": {
+    "$date": {
+      "$numberLong": "1670371200000"
+    }
+  },
+  "endDate": {
+    "$date": {
+      "$numberLong": "1670371200000"
+    }
+  },
+  "country": "Brasil",
+  "city": "Rio de Janeiro",
+  "creator": "admin@admin.admin",
+  "enabled": true,
+  "__v": 0
+}]

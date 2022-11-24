@@ -1,0 +1,43 @@
+[{
+  "_id": {
+    "$oid": "637fe6bd231eedeca17c80ff"
+  },
+  "name": "1 Entrada (proveedor 2)",
+  "description": "Buenos muchachos general ",
+  "cost": 10000,
+  "informationUrl": "",
+  "eventId": "637fe220181758f89ad669a9",
+  "validityDate": "2022-12-06",
+  "stock": 15,
+  "supplierEmail": "fede2@fede.com",
+  "country": "Uruguay",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "637fe6bd231eedeca17c8101"
+  },
+  "name": "2 Entradas (proveedor 2)",
+  "description": "Buenos muchachos platea",
+  "cost": 10000,
+  "informationUrl": "",
+  "eventId": "637fe220181758f89ad669a9",
+  "validityDate": "2022-12-06",
+  "stock": 15,
+  "supplierEmail": "fede2@fede.com",
+  "country": "Uruguay",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "637fe6bd231eedeca17c8103"
+  },
+  "name": "3 Entradas (proveedor 2)",
+  "description": "Buenos muchachos backstage pass",
+  "cost": 10000,
+  "informationUrl": "",
+  "eventId": "637fe220181758f89ad669a9",
+  "validityDate": "2022-12-06",
+  "stock": 15,
+  "supplierEmail": "fede2@fede.com",
+  "country": "Uruguay",
+  "__v": 0
+}]

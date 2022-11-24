@@ -39,7 +39,7 @@ const getBestSeller = (transactions) => {
 	});
 	return sellers.sort(function (a, b) {
 		return a.sales - b.sales;
-	})[0];
+	}).pop();
 };
 
 const getBestSellingCountry = (transactions) => {
@@ -105,7 +105,7 @@ const buildResponseByCountry = (grouped) => {
 		countryInfo.completedPercentage =
 			(completedTransactions.length * 100) / country.transactions.length;
 		const averageTime = getAverageTransactionTime(completedTransactions);
-		eventInfo.averageTransactionTime = `${averageTime} seconds`;
+		countryInfo.averageTransactionTime = `${averageTime} seconds`;
 		countryInfo.bestSeller = getBestSeller(completedTransactions);
 		response.push(countryInfo);
 	});
