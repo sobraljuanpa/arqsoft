@@ -1,0 +1,178 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Products suppliers",
+    "description": "This is the protocol for products suppliers\n",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://virtserver.swaggerhub.com/federicocarbonell/SuppliersProducts/1.0.0",
+      "description": "SwaggerHub API Auto Mocking"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Product",
+      "description": "Event products"
+    }
+  ],
+  "paths": {
+    "/products": {
+      "get": {
+        "tags": [
+          "Product"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductsResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/products/:supplierId/products": {
+      "post": {
+        "tags": [
+          "Create product"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductsResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ReturnedProduct": {
+        "required": [
+          "cost",
+          "country",
+          "description",
+          "eventId",
+          "id",
+          "informationUrl",
+          "name",
+          "stock",
+          "supplierEmail",
+          "validityDate"
+        ],
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "cost": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "informationUrl": {
+            "type": "string"
+          },
+          "eventId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "validityDate": {
+            "type": "string"
+          },
+          "stock": {
+            "type": "integer"
+          },
+          "supplierEmail": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          }
+        }
+      },
+      "InputProduct": {
+        "required": [
+          "cost",
+          "country",
+          "description",
+          "eventId",
+          "informationUrl",
+          "name",
+          "stock",
+          "supplierEmail",
+          "validityDate"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "cost": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "informationUrl": {
+            "type": "string"
+          },
+          "eventId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "validityDate": {
+            "type": "string"
+          },
+          "stock": {
+            "type": "integer"
+          },
+          "supplierEmail": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          }
+        }
+      },
+      "ProductsRequest": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ReturnedProduct"
+        }
+      },
+      "ProductsResponse": {
+        "type": "array",
+        "description": "List of products",
+        "items": {
+          "$ref": "#/components/schemas/InputProduct"
+        }
+      }
+    }
+  }
+}
