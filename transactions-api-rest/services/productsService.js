@@ -50,7 +50,10 @@ const getSupplierProducts = async (integrationUrl) => {
 
 const sortProductsByEvent = (products) => {
 	const sortedProducts = products.sort((a, b) => {
-		return a.eventId - b.eventId;
+		return a.eventId.localeCompare(b.eventId, undefined, {
+			numerid: true,
+			sensitivity: 'base',
+		});
 	});
 	return sortedProducts;
 };
@@ -136,20 +139,19 @@ const getProductsByEvent = async (eventId, country) => {
 
 const productsListAlgorithm = (products, country) => {
 	if (products) {
-		let firstProduct = {};
-		let previousSupplierEmail = '';
+		let previousSupplierEmails = [];
 		let productsFromDifferentSupplier = [];
 		if (products[0].country === country) {
-			firstProduct = products[0];
-			previousSupplierEmail = firstProduct.supplierEmail;
+			const firstProduct = products[0];
+			previousSupplierEmails.push(firstProduct.supplierEmail);
 			productsFromDifferentSupplier = [firstProduct];
 		}
 		products.forEach((product) => {
 			if (
-				product.supplierEmail != previousSupplierEmail &&
+				!previousSupplierEmails.includes(product.supplierEmail) &&
 				product.country === country
 			) {
-				previousSupplierEmail = product.supplierEmail;
+				previousSupplierEmails.push(product.supplierEmail);
 				productsFromDifferentSupplier.push(product);
 			}
 		});
