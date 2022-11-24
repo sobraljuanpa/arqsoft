@@ -3,6 +3,13 @@ const Supplier = mongoose.model('Supplier');
 const axios = require('axios');
 const RedisClient = require('../cache/cacheManager');
 
+class RestError extends Error {
+	constructor(message, status) {
+		super(message);
+		this.status = status;
+	}
+}
+
 const getAllIntegrationURLs = async () => {
 	try {
 		const suppliers = await Supplier.find().lean();
@@ -12,14 +19,14 @@ const getAllIntegrationURLs = async () => {
 		});
 		return integrationURLs;
 	} catch (error) {
-		console.log(error);
+		console.log(error.message);
+		throw new RestError(
+			'El sistema esta experimentando problemas, por favor reintente en un tiempo o contactesé con un administrador.',
+			400
+		);
 	}
 };
 
-/**
- * Gets all products of the suppliers registered on the system.
- * @returns Products sorted by eventId descending.
- */
 const getAllProducts = async () => {
 	try {
 		let products = [];
@@ -30,8 +37,15 @@ const getAllProducts = async () => {
 			products.push(...supplierProducts);
 		}
 		return sortProductsByEvent(products);
-	} catch (err) {
-		console.log(err);
+	} catch (error) {
+		console.log(
+			'An error occurred updating the product stock: ',
+			error.message
+		);
+		throw new RestError(
+			'El sistema esta experimentando problemas, por favor reintente en un tiempo o contactesé con un administrador.',
+			400
+		);
 	}
 };
 
@@ -43,8 +57,15 @@ const getSupplierProducts = async (integrationUrl) => {
 		);
 		const response = await axios.get(supplierProductsUrl);
 		return response.data;
-	} catch (err) {
-		console.log(err);
+	} catch (error) {
+		console.log(
+			'An error occurred updating the product stock: ',
+			error.message
+		);
+		throw new RestError(
+			'El sistema esta experimentando problemas, por favor reintente en un tiempo o contactesé con un administrador.',
+			400
+		);
 	}
 };
 
@@ -60,15 +81,26 @@ const sortProductsByEvent = (products) => {
 
 // The format of the products will be [ {eventId: [products]}, {eventId: [products]} ]
 const setProductsCache = async (productsByEvent) => {
-	for (products of productsByEvent) {
-		// First we obtain the eventId
-		const eventId = Object.keys(products)[0];
-		// Then we obtain the products for that event
-		const eventProducts = products[eventId];
-		// We set the products on redis.
-		await RedisClient.set(
-			`eventProducts?${eventId}`,
-			JSON.stringify(eventProducts)
+	try {
+		for (products of productsByEvent) {
+			// First we obtain the eventId
+			const eventId = Object.keys(products)[0];
+			// Then we obtain the products for that event
+			const eventProducts = products[eventId];
+			// We set the products on redis.
+			await RedisClient.set(
+				`eventProducts?${eventId}`,
+				JSON.stringify(eventProducts)
+			);
+		}
+	} catch (error) {
+		console.log(
+			'An error occurred updating the product stock: ',
+			error.message
+		);
+		throw new RestError(
+			'El sistema esta experimentando problemas, por favor reintente en un tiempo o contactesé con un administrador.',
+			400
 		);
 	}
 };
@@ -102,7 +134,14 @@ const separateProductsByEvents = (products) => {
 			return [];
 		}
 	} catch (error) {
-		console.log(error);
+		console.log(
+			'An error occurred updating the product stock: ',
+			error.message
+		);
+		throw new RestError(
+			'El sistema esta experimentando problemas, por favor reintente en un tiempo o contactesé con un administrador.',
+			400
+		);
 	}
 };
 
@@ -132,8 +171,15 @@ const getProductsByEvent = async (eventId, country) => {
 
 			return eventProducts;
 		}
-	} catch (err) {
-		console.log(err);
+	} catch (error) {
+		console.log(
+			'An error occurred updating the product stock: ',
+			error.message
+		);
+		throw new RestError(
+			'El sistema esta experimentando problemas, por favor reintente en un tiempo o contactesé con un administrador.',
+			400
+		);
 	}
 };
 
@@ -172,9 +218,13 @@ const productsListAlgorithm = (products, country) => {
 
 const updateAllProductsCache = async () => {
 	console.log('Updating cache products');
-	const products = await getAllProducts();
-	const productsByEvent = separateProductsByEvents(products);
-	await setProductsCache(productsByEvent);
+	try {
+		const products = await getAllProducts();
+		const productsByEvent = separateProductsByEvents(products);
+		await setProductsCache(productsByEvent);
+	} catch (error) {
+		console.log('An error occurred updating the cache: ', error.message);
+	}
 };
 
 const getProductStock = async (supplierEmail, productId) => {
@@ -182,7 +232,7 @@ const getProductStock = async (supplierEmail, productId) => {
 	const supplierProducts = await getSupplierProducts(supplier.integrationURL);
 	const product = supplierProducts.find((product) => product._id == productId);
 	if (!product) {
-		throw new Error('No existe un producto con el id especificado.');
+		throw new RestError('No existe un producto con el id especificado.', 400);
 	}
 	return product.stock;
 };
@@ -199,7 +249,14 @@ const updateProductStock = async (productId, supplierEmail, quantity) => {
 
 		updateAllProductsCache();
 	} catch (error) {
-		console.log(error);
+		console.log(
+			'An error occurred updating the product stock: ',
+			error.message
+		);
+		throw new RestError(
+			'El sistema esta experimentando problemas, por favor reintente en un tiempo o contactesé con un administrador.',
+			400
+		);
 	}
 };
 

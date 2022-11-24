@@ -29,26 +29,36 @@ app.use('/doc', swaggerUI.serve, swaggerUI.setup(swaggerFile));
 main().catch((err) => console.log(err));
 
 async function main() {
-	await mongoose
-		.connect(config.MONGO_URL)
-		.then(() => console.log('Connected to mongo instance'));
+	try {
+		await mongoose
+			.connect(config.MONGO_URL)
+			.then(() => console.log('Connected to mongo instance'));
 
-	RedisClient.connect();
+		app.listen(port, () => {
+			console.log(`Listening on port ${port}`);
+		});
 
-	app.listen(port, () => {
-		console.log(`Listening on port ${port}`);
-	});
+		RedisClient.connect();
+		updateAllProductsCache();
 
-	updateAllProductsCache();
-
-	//TODO: Capaz esto moverlo para algun lado como "tareas recurrentes"
-	setInterval(async () => {
-		try {
-			validateAllTransactionsState();
-			updateAllProductsCache();
-		} catch (error) {
-			console.log('Error caching products');
-			console.log(error);
-		}
-	}, config.CACHE_UPDATE_TIME);
+		setInterval(async () => {
+			try {
+				updateAllProductsCache();
+			} catch (error) {
+				console.log('Error caching products: ');
+				console.log(error.message);
+			}
+		}, config.CACHE_UPDATE_TIME);
+		
+		setInterval(async () => {
+			try {
+				validateAllTransactionsState();
+			} catch (error) {
+				console.log('Error validating transactions state: ');
+				console.log(error.message);
+			}
+		}, config.TRANSACTION_STATE_CHECK_TIME);
+	} catch (error) {
+		console.log(error.message);
+	}
 }

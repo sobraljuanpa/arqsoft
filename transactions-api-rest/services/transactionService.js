@@ -12,14 +12,22 @@ const hasExpired = (startDate) => {
 };
 
 const updateTransactionState = async (transactionId, state) => {
-	let updatedTransaction = await Transaction.findOneAndUpdate(transactionId, {
-		status: state,
-	});
-	return updatedTransaction;
+	try {
+		let updatedTransaction = await Transaction.findOneAndUpdate(transactionId, {
+			status: state,
+		});
+		return updatedTransaction;
+	} catch (error) {
+		console.log(
+			'An error occurred updating the transaction state: ',
+			error.message
+		);
+	}
 };
 
 const validateAllTransactionsState = async () => {
 	try {
+		console.log('Validating transactions state.')
 		const transactions = await Transaction.find().lean();
 		for (transaction of transactions) {
 			if (
@@ -39,8 +47,11 @@ const validateAllTransactionsState = async () => {
 				updateTransactionState(transaction._id, 'Fallida');
 			}
 		}
-	} catch (err) {
-		console.log(err);
+	} catch (error) {
+		console.log(
+			'An error occurred validating the transaction state: ',
+			error.message
+		);
 	}
 };
 
