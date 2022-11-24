@@ -28,7 +28,16 @@ subscriber.connect();
 subscriber.subscribe('request', async (message) => {
 	let messageObject = JSON.parse(message);
 	let request = new RequestLog(
-		({ method, url, body, statusCode, actor, timetaken, inboundTimestamp, outboundTimestamp } = messageObject)
+		({
+			method,
+			url,
+			body,
+			statusCode,
+			actor,
+			timetaken,
+			inboundTimestamp,
+			outboundTimestamp,
+		} = messageObject)
 	);
 	await request.save();
 });
@@ -51,7 +60,7 @@ subscriber.subscribe('eventUpdate', async (message) => {
 
 // Express
 const app = express();
-app.use(activityMiddleware.logActivity)
+app.use(activityMiddleware.logActivity);
 app.use(logsRoutes);
 app.use(salesRoutes);
 app.use('/doc', swaggerUI.serve, swaggerUI.setup(swaggerFile));

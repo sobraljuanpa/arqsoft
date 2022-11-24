@@ -128,7 +128,16 @@ router.post(
 				},
 				{ new: true }
 			);
-			res.status(200).send(updatedTransaction);
+
+			// Removing card number for the response, for security concerns.
+			updatedTransaction.paymentInfo.cardNumber = null;
+
+			res
+				.status(200)
+				.send({
+					transaction: updatedTransaction,
+					paymentUrl: process.env.PAYMENT_URL,
+				});
 		} catch (error) {
 			res.status(400).send({ status: 400, message: error.message });
 		}

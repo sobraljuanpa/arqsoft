@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config();
 require('./models/transactionModel');
 require('./models/Supplier');
 require('./models/Address');
@@ -30,7 +30,7 @@ main().catch((err) => console.log(err));
 
 async function main() {
 	await mongoose
-		.connect('mongodb://mongo:27017/test')
+		.connect(config.MONGO_URL)
 		.then(() => console.log('Connected to mongo instance'));
 
 	RedisClient.connect();

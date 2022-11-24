@@ -137,6 +137,14 @@ const getProductsByEvent = async (eventId, country) => {
 	}
 };
 
+const shuffleList = (list) => {
+	const shuffeled = list.sort(() => {
+		const randomTrueOrFalse = Math.random() > 0.5;
+		return randomTrueOrFalse ? 1 : -1;
+	});
+	return shuffeled;
+};
+
 const productsListAlgorithm = (products, country) => {
 	if (products) {
 		let previousSupplierEmails = [];
@@ -155,7 +163,8 @@ const productsListAlgorithm = (products, country) => {
 				productsFromDifferentSupplier.push(product);
 			}
 		});
-		return productsFromDifferentSupplier.slice(0, 5);
+		shuffleProducs = shuffleList(productsFromDifferentSupplier);
+		return shuffleProducs.slice(0, 5);
 	} else {
 		return [];
 	}
@@ -189,28 +198,6 @@ const updateProductStock = async (productId, supplierEmail, quantity) => {
 		await axios.put(updateStockUrl, {}, { params: { stock: quantity } });
 
 		updateAllProductsCache();
-	} catch (error) {
-		console.log(error);
-	}
-};
-
-// Require some testing.
-const updateSpecificProductCache = async (product) => {
-	try {
-		const eventId = product.eventId;
-		const cachedProducts = await RedisClient.get(`eventProducts?${eventId}`);
-		if (cachedProducts) {
-			eventProducts = JSON.parse(cachedProducts);
-			// Returns a new array, iterates over all objects to find the same id and then update it.
-			const updatedEventProducts = eventProducts.map(
-				(oldProd) =>
-					[product].find((newProd) => newProd.id === oldProd.id) || oldProd
-			);
-			await RedisClient.set(
-				`eventProducts?${eventId}`,
-				JSON.stringify(updatedEventProducts)
-			);
-		}
 	} catch (error) {
 		console.log(error);
 	}
