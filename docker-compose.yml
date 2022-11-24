@@ -26,7 +26,7 @@ services:
     build: events-api-rest/.
     depends_on:
       - mongo
-      - general-logs-subscriber
+      - logs-api-rest
     ports:
       - "3000:3000"
     networks:
@@ -72,9 +72,9 @@ services:
       - sa-network
     volumes:
       - ./suppliers-products-mock/:/app
-  general-logs-subscriber:
+  logs-api-rest:
     restart: on-failure
-    build: general-logs-subscriber/.
+    build: logs-api-rest/.
     depends_on:
       - redis
       - mongo
@@ -83,7 +83,7 @@ services:
     networks:
       - sa-network
     volumes:
-      - ./general-logs-subscriber/:/app
+      - ./logs-api-rest/:/app
       - ./utils:/app/utils
       - ./auth-api-rest/keys:/app/keys
   transactions-api-rest:
