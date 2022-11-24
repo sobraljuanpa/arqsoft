@@ -139,20 +139,19 @@ const getProductsByEvent = async (eventId, country) => {
 
 const productsListAlgorithm = (products, country) => {
 	if (products) {
-		let firstProduct = {};
-		let previousSupplierEmail = '';
+		let previousSupplierEmails = [];
 		let productsFromDifferentSupplier = [];
 		if (products[0].country === country) {
-			firstProduct = products[0];
-			previousSupplierEmail = firstProduct.supplierEmail;
+			const firstProduct = products[0];
+			previousSupplierEmails.push(firstProduct.supplierEmail);
 			productsFromDifferentSupplier = [firstProduct];
 		}
 		products.forEach((product) => {
 			if (
-				product.supplierEmail != previousSupplierEmail &&
+				!previousSupplierEmails.includes(product.supplierEmail) &&
 				product.country === country
 			) {
-				previousSupplierEmail = product.supplierEmail;
+				previousSupplierEmails.push(product.supplierEmail);
 				productsFromDifferentSupplier.push(product);
 			}
 		});
