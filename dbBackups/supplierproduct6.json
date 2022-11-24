@@ -1,0 +1,43 @@
+[{
+  "_id": {
+    "$oid": "637fe763231eedeca17c8117"
+  },
+  "name": "1 Entrada (proveedor 6)",
+  "description": "Chano general ",
+  "cost": 10000,
+  "informationUrl": "",
+  "eventId": "637fe2e5d14913c4e4b7d779",
+  "validityDate": "2022-12-07",
+  "stock": 15,
+  "supplierEmail": "fede6@fede.com",
+  "country": "Argentina",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "637fe763231eedeca17c8119"
+  },
+  "name": "2 Entradas (proveedor 6)",
+  "description": "Chano platea",
+  "cost": 10000,
+  "informationUrl": "",
+  "eventId": "637fe2e5d14913c4e4b7d779",
+  "validityDate": "2022-12-07",
+  "stock": 15,
+  "supplierEmail": "fede6@fede.com",
+  "country": "Argentina",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "637fe763231eedeca17c811b"
+  },
+  "name": "3 Entradas (proveedor 6)",
+  "description": "Chano backstage pass",
+  "cost": 10000,
+  "informationUrl": "",
+  "eventId": "637fe2e5d14913c4e4b7d779",
+  "validityDate": "2022-12-07",
+  "stock": 15,
+  "supplierEmail": "fede6@fede.com",
+  "country": "Argentina",
+  "__v": 0
+}]

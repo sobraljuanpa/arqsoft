@@ -1,0 +1,21 @@
+{
+	"name": "logs-api-rest",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "node index.js",
+		"dev": "nodemon -L -P 2000 index.js"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"express": "^4.18.2",
+		"jsonwebtoken": "^8.5.1",
+		"mongoose": "6.6.4",
+		"nodemon": "^2.0.4",
+		"redis": "^4.4.0",
+		"swagger-ui-express": "^4.6.0",
+		"dotenv": "^16.0.3"
+	}
+}

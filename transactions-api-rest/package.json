@@ -1,0 +1,28 @@
+{
+	"name": "transactions-api-rest",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "node index.js",
+		"dev": "nodemon -L -P 2000 index.js"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"axios": "^1.1.3",
+		"bcryptjs": "^2.4.3",
+		"ciuy": "^1.0.0",
+		"config": "^3.3.8",
+		"dotenv": "^16.0.3",
+		"express": "4.18.1",
+		"express-queue": "^0.0.13",
+		"express-validator": "^6.14.2",
+		"jsonwebtoken": "^8.5.1",
+		"mongoose": "6.6.4",
+		"nodemon": "^2.0.4",
+		"pipes-and-filters": "^0.0.4",
+		"redis": "^4.3.1",
+		"swagger-ui-express": "^4.6.0"
+	}
+}

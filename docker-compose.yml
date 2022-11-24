@@ -1,5 +1,6 @@
 version: "3.7"
 services:
+  # dependencias
   mongo:
     container_name: mongo
     image: mongo:latest
@@ -12,16 +13,91 @@ services:
       - "27017:27017"
     networks:
       - sa-network
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - sa-network
+  # propios
+  events-api-rest:
+    restart: on-failure
+    build: events-api-rest/.
+    depends_on:
+      - mongo
+      - logs-api-rest
+    ports:
+      - "3000:3000"
+    networks:
+      - sa-network
+    volumes:
+      - ./events-api-rest/:/app
+      - ./utils:/app/utils
+      - ./auth-api-rest/keys:/app/keys
   suppliers-api-rest:
     restart: on-failure
     build: suppliers-api-rest/.
     depends_on:
       - mongo
     ports:
-      - "3000:3000"
+      - "3001:3001"
     networks:
       - sa-network
-    command: node index.js
+    volumes:
+      - ./suppliers-api-rest/:/app
+      - ./auth-api-rest/keys:/app/keys
+  auth-api-rest:
+    restart: on-failure
+    build: auth-api-rest/.
+    depends_on:
+      - mongo
+      - redis
+    ports:
+      - "3002:3002"
+    networks:
+      - sa-network
+    volumes:
+      - ./auth-api-rest/:/app
+      - ./utils:/app/utils
+  suppliers-products-mock-api-rest:
+    container_name: suppliers-products-mock-api-rest
+    restart: on-failure
+    build: suppliers-products-mock/.
+    depends_on:
+      - mongo
+    ports:
+      - "3005:3005"
+    networks:
+      - sa-network
+    volumes:
+      - ./suppliers-products-mock/:/app
+  logs-api-rest:
+    restart: on-failure
+    build: logs-api-rest/.
+    depends_on:
+      - redis
+      - mongo
+    ports:
+      - "3003:3003"
+    networks:
+      - sa-network
+    volumes:
+      - ./logs-api-rest/:/app
+      - ./utils:/app/utils
+      - ./auth-api-rest/keys:/app/keys
+  transactions-api-rest:
+    restart: on-failure
+    build: transactions-api-rest/.
+    depends_on:
+      - mongo
+    ports:
+      - "3004:3004"
+    networks:
+      - sa-network
+    volumes:
+      - ./transactions-api-rest/:/app
+      - ./utils:/app/utils
 
 networks:
   sa-network:

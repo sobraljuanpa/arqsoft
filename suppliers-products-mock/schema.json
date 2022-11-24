@@ -47,7 +47,8 @@
             "eventId",
             "id",
             "informationUrl",
-            "name"
+            "name",
+            "supplierEmail"
           ],
           "type": "object",
           "properties": {
@@ -77,6 +78,12 @@
             },
             "stock": {
               "type": "integer"
+            },
+            "supplierEmail": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
             }
           }
         },
