@@ -5,7 +5,7 @@ const { getProductStock } = require('../services/productsService');
 
 const validationPipeline = Pipeline.create('Transaction validations');
 
-const validate_mail = function (input, next) {
+const validate_mail = (input, next) => {
 	const regex = /\S+@\S+\.\S+/;
 	if (regex.test(input.email)) {
 		next(null, input);
@@ -34,8 +34,8 @@ const validate_stock = async function (input, next) {
 			return next(Error('No hay stock suficiente para realizar la compra.'));
 		}
 	} catch (error) {
-        return next(Error(error.message));
-    }
+		return next(Error(error.message));
+	}
 };
 
 const purchaseValidation = (input, next) => {
