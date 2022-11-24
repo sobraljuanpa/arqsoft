@@ -19,7 +19,6 @@ class RestError extends Error {
 //https://mongoosejs.com/docs/tutorials/dates.html
 
 const getEventsByDateRange = async (document, requestBody) => {
-	console.log(requestBody);
 	if (requestBody?.since) {
 		if (requestBody.until) {
 			console.log(requestBody.since);
@@ -50,7 +49,7 @@ router.get(
 	authMiddleware.verifyProviderToken,
 	async (req, res) => {
 		try {
-			let events = await EventPublishingLog.find().lean();
+			let events = await getEventsByDateRange(EventPublishingLog, req.query);
 			res.status(200).send(events);
 		} catch (error) {
 			return res.status(500).send({ error: error.message });

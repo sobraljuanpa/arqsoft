@@ -46,7 +46,6 @@ services:
       - sa-network
     volumes:
       - ./suppliers-api-rest/:/app
-      - ./middleware:/app/middleware
       - ./auth-api-rest/keys:/app/keys
   auth-api-rest:
     restart: on-failure

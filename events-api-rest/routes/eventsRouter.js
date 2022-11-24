@@ -14,7 +14,11 @@ class RestError extends Error {
 
 router.get('/events', async (req, res) => {
 	try {
-		let events = await Event.find().lean();
+		const date = new Date();
+		const todayDate = date.getTime();
+		let events = await Event.find({
+			endDate: { $gte: todayDate },
+		}).lean();
 		res.status(200).send(events);
 	} catch (error) {
 		return res.status(500).send({ error: error.message });
@@ -131,20 +135,27 @@ async function approvingUserIsNotCreator(eventId, approver) {
 }
 
 // Patch para aprobacion unicamente, facilita el tema de loggeo
-router.patch('/events/:id', authMiddleware.verifyAdminToken, async (req, res) => {
-	const id = req.params.id;
-	let paramsToUpdate = {};
-	if (await approvingUserIsNotCreator(id, req.user.email)) {
-		paramsToUpdate.enabled = req.body.enabled;
-		let updatedEvent = await Event.findOneAndUpdate(id, paramsToUpdate, {
-			new: true,
-		});
-		res.status(200).send(updatedEvent);
-	} else {
-		res
-			.status(400)
-			.send("Event can't be approved by same user that created it");
+router.patch(
+	'/events/:id',
+	authMiddleware.verifyAdminToken,
+	async (req, res) => {
+		const id = req.params.id;
+		let paramsToUpdate = {};
+		if (await approvingUserIsNotCreator(id, req.user.email)) {
+			paramsToUpdate.enabled = req.body.enabled;
+			let updatedEvent = await Event.findOneAndUpdate(id, paramsToUpdate, {
+				new: true,
+			});
+			res.status(200).send(updatedEvent);
+		} else {
+			res
+				.status(400)
+				.send({
+					status: 400,
+					message: "Event can't be approved by same user that created it",
+				});
+		}
 	}
-});
+);
 
 module.exports = router;

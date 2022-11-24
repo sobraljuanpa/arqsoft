@@ -1,21 +1,8 @@
-const { generateKeyPairSync } = require("node:crypto");
+const fs = require('fs');
 
 const generateKeys = () => {
-  let { publicKey, privateKey } = generateKeyPairSync("rsa", {
-    modulusLength: 4096,
-    publicKeyEncoding: {
-      type: "spki",
-      format: "der",
-    },
-    privateKeyEncoding: {
-      type: "pkcs8",
-      format: "der",
-      cipher: "aes-256-cbc",
-      passphrase: "top secret",
-    },
-  });
-  publicKey = publicKey.toString('hex');
-  privateKey = privateKey.toString('hex');
+  const publicKey = fs.readFileSync('./keys/public.key', 'utf8');
+  const privateKey = fs.readFileSync('./keys/private.key', 'utf8');
   return { publicKey, privateKey };
 };
 
