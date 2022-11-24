@@ -46,20 +46,20 @@ services:
       - sa-network
     volumes:
       - ./suppliers-api-rest/:/app
-      - ./auth-api-rest/:/app
       - ./middleware:/app/middleware
+      - ./auth-api-rest/keys:/app/keys
   auth-api-rest:
     restart: on-failure
     build: auth-api-rest/.
     depends_on:
       - mongo
+      - redis
     ports:
       - "3002:3002"
     networks:
       - sa-network
     volumes:
       - ./auth-api-rest/:/app
-      - ./events-api-rest/:/app
       - ./middleware:/app/middleware
   suppliers-products-mock-api-rest:
     container_name: suppliers-products-mock-api-rest
@@ -78,6 +78,7 @@ services:
     build: general-logs-subscriber/.
     depends_on:
       - redis
+      - mongo
     ports:
       - "3003:3003"
     networks:
@@ -97,6 +98,7 @@ services:
       - sa-network
     volumes:
       - ./transactions-api-rest/:/app
+      - ./middleware:/app/sharedMiddleware
 
 networks:
   sa-network:

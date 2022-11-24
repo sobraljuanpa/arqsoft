@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Supplier = mongoose.model('Supplier');
 const axios = require('axios');
-const http = require('http');
 const RedisClient = require('../cache/cacheManager');
 
 const getAllIntegrationURLs = async () => {
@@ -51,7 +50,10 @@ const getSupplierProducts = async (integrationUrl) => {
 
 const sortProductsByEvent = (products) => {
 	const sortedProducts = products.sort((a, b) => {
-		return a.eventId - b.eventId;
+		return a.eventId.localeCompare(b.eventId, undefined, {
+			numerid: true,
+			sensitivity: 'base',
+		});
 	});
 	return sortedProducts;
 };
@@ -135,29 +137,34 @@ const getProductsByEvent = async (eventId, country) => {
 	}
 };
 
+const shuffleList = (list) => {
+	const shuffeled = list.sort(() => {
+		const randomTrueOrFalse = Math.random() > 0.5;
+		return randomTrueOrFalse ? 1 : -1;
+	});
+	return shuffeled;
+};
+
 const productsListAlgorithm = (products, country) => {
 	if (products) {
-		let firstProduct = {};
-		let previousSupplierEmail = '';
+		let previousSupplierEmails = [];
 		let productsFromDifferentSupplier = [];
-
-		console.log('Products', products);
 		if (products[0].country === country) {
-			firstProduct = products[0];
-			previousSupplierEmail = firstProduct.supplierEmail;
+			const firstProduct = products[0];
+			previousSupplierEmails.push(firstProduct.supplierEmail);
 			productsFromDifferentSupplier = [firstProduct];
-			console.log('First product', firstProduct);
 		}
 		products.forEach((product) => {
 			if (
-				product.supplierEmail != previousSupplierEmail &&
+				!previousSupplierEmails.includes(product.supplierEmail) &&
 				product.country === country
 			) {
-				previousSupplierEmail = product.supplierEmail;
+				previousSupplierEmails.push(product.supplierEmail);
 				productsFromDifferentSupplier.push(product);
 			}
 		});
-		return productsFromDifferentSupplier.slice(0, 5);
+		shuffleProducs = shuffleList(productsFromDifferentSupplier);
+		return shuffleProducs.slice(0, 5);
 	} else {
 		return [];
 	}
@@ -171,18 +178,13 @@ const updateAllProductsCache = async () => {
 };
 
 const getProductStock = async (supplierEmail, productId) => {
-	try {
-		console.log(supplierEmail, productId);
-		const supplier = await Supplier.findOne({ email: supplierEmail }).exec();
-		const supplierProducts = await getSupplierProducts(supplier.integrationURL);
-		const product = supplierProducts.find(
-			(product) => product._id == productId
-		);
-		console.log(product);
-		return product.stock;
-	} catch (err) {
-		console.log(err);
+	const supplier = await Supplier.findOne({ email: supplierEmail }).exec();
+	const supplierProducts = await getSupplierProducts(supplier.integrationURL);
+	const product = supplierProducts.find((product) => product._id == productId);
+	if (!product) {
+		throw new Error('No existe un producto con el id especificado.');
 	}
+	return product.stock;
 };
 
 const updateProductStock = async (productId, supplierEmail, quantity) => {
@@ -201,28 +203,6 @@ const updateProductStock = async (productId, supplierEmail, quantity) => {
 	}
 };
 
-// Require some testing.
-const updateSpecificProductCache = async (product) => {
-	try {
-		const eventId = product.eventId;
-		const cachedProducts = await RedisClient.get(`eventProducts?${eventId}`);
-		if (cachedProducts) {
-			eventProducts = JSON.parse(cachedProducts);
-			// Returns a new array, iterates over all objects to find the same id and then update it.
-			const updatedEventProducts = eventProducts.map(
-				(oldProd) =>
-					[product].find((newProd) => newProd.id === oldProd.id) || oldProd
-			);
-			await RedisClient.set(
-				`eventProducts?${eventId}`,
-				JSON.stringify(updatedEventProducts)
-			);
-		}
-	} catch (error) {
-		console.log(error);
-	}
-};
-
 module.exports = {
 	getAllIntegrationURLs,
 	getAllProducts,
@@ -231,5 +211,5 @@ module.exports = {
 	setProductsCache,
 	updateAllProductsCache,
 	getProductStock,
-	updateProductStock
+	updateProductStock,
 };

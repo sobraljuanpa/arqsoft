@@ -3,10 +3,15 @@ const mongoose = require('mongoose');
 require('./models/requestLog');
 require('./models/eventPublishingLog');
 require('./models/eventUpdateLog');
+require('./models/transactionModel');
+require('./models/PaymentInfo');
+const swaggerUI = require('swagger-ui-express');
+const swaggerFile = require('./logs-swagger.json');
 const RequestLog = mongoose.model('RequestLog');
 const EventPublishingLog = mongoose.model('EventPublishingLog');
 const EventUpdateLog = mongoose.model('EventUpdateLog');
 const logsRoutes = require('./routes/logsRouter');
+const salesRoutes = require('./routes/salesRouter');
 const activityMiddleware = require('./middleware/logs/activity');
 
 // Redis
@@ -23,7 +28,16 @@ subscriber.connect();
 subscriber.subscribe('request', async (message) => {
 	let messageObject = JSON.parse(message);
 	let request = new RequestLog(
-		({ method, url, body, statusCode, actor, timetaken, inboundTimestamp, outboundTimestamp } = messageObject)
+		({
+			method,
+			url,
+			body,
+			statusCode,
+			actor,
+			timetaken,
+			inboundTimestamp,
+			outboundTimestamp,
+		} = messageObject)
 	);
 	await request.save();
 });
@@ -46,8 +60,10 @@ subscriber.subscribe('eventUpdate', async (message) => {
 
 // Express
 const app = express();
-app.use(activityMiddleware.logActivity)
+app.use(activityMiddleware.logActivity);
 app.use(logsRoutes);
+app.use(salesRoutes);
+app.use('/doc', swaggerUI.serve, swaggerUI.setup(swaggerFile));
 
 main().catch((err) => console.log(err));
 

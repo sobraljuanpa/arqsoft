@@ -1,70 +1,35 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Transaction = mongoose.model('Transaction');
-const Supplier = mongoose.model('Supplier');
 var expressQueue = require('express-queue');
 const fs = require('fs');
 const router = express.Router();
 var jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+
+const { getTransactionInfo } = require('../services/transactionService');
 const sessionValidator = require('../middleware/sessionValidator');
-const ciValidator = require('ciuy');
-const Pipeline = require('pipes-and-filters');
-const axios = require('axios');
+const validationPipeline = require('../middleware/purchaseValidationPipeline');
 const {
-	updateAllProductsCache,
+	paymentValidation,
+	transactionValidation,
+} = require('../middleware/paramsValidator');
+
+const {
 	getProductsByEvent,
-	getProductStock,
 	updateProductStock,
 } = require('../services/productsService');
 
-// Move this to another file.
-const pipeline = Pipeline.create('Transaction validations');
+const sessionQueue = expressQueue({
+	activeLimit: 1,
+	queuedLimit: process.env.MAX_QUEUED_TRANSACTIONS,
+});
 
-const validate_mail = function (input, next) {
-	const regex = /\S+@\S+\.\S+/;
-	if (regex.test(input.email)) {
-		next(null, input);
-	} else {
-		return next(Error('Invalid email address'));
-	}
-};
-
-const validate_CI = function (input, next) {
-	if (ciValidator.validateIdentificationNumber(input.ci)) {
-		next(null, input);
-	} else {
-		return next(Error('Invalid CI'));
-	}
-};
-
-const validate_stock = async function (input, next) {
-	//hay que validar stock, mismo formato que las anteriores
-	const quantity = input.product.quantity;
-	const productId = input.product.productId;
-	const supplierEmail = input.product.supplierEmail;
-	console.log('Quantity', quantity);
-	const productStock = await getProductStock(supplierEmail, productId);
-	if (quantity <= productStock) {
-		next(null, input);
-	} else {
-		return next(Error('No hay stock suficiente para realizar la compra.'));
-	}
-};
-
-pipeline.use(validate_mail);
-pipeline.use(validate_CI);
-pipeline.use(validate_stock);
-
-const sessionQueue = expressQueue({ activeLimit: 1, queuedLimit: 100000 });
-
-router.post('/transaction', async (req, res) => {
+router.post('/transaction', transactionValidation, async (req, res) => {
 	try {
-		const { name, birthdate, country } = req.body;
+		const { name, birthdate, country, transactionId } = req.body;
 
-		// Validate user input
-		if (!(name && birthdate && country)) {
-			res.status(400).send('Campos incompletos');
-		}
+		if (transactionId) return getTransactionInfo(transactionId, res);
 
 		const transaction = await Transaction.create({
 			name,
@@ -78,9 +43,10 @@ router.post('/transaction', async (req, res) => {
 			algorithm: 'RS256',
 		});
 		const response = { sessionToken: token };
-		res.status(201).json(response);
-	} catch (err) {
-		console.log(err);
+		res.status(200).json(response);
+	} catch (error) {
+		console.log(error);
+		res.status(400).send({ status: 400, message: error.message });
 	}
 });
 
@@ -92,78 +58,90 @@ router.get('/eventsProducts/:eventId', sessionValidator, async (req, res) => {
 		const eventProducts = await getProductsByEvent(eventId, country);
 		res.status(200).send(eventProducts);
 	} catch (error) {
-		return res.status(500).send({ error: error.message });
+		return res.status(400).send({ status: 400, message: error.message });
 	}
 });
 
 router.post('/purchase', sessionValidator, sessionQueue, async (req, res) => {
-	/**
-	 * {product: { productId: number, supplierEmail: string, eventId, quantity: number }, email: string, ci:string}
-	 */
-	pipeline.execute(req.body, async function (err, result) {
-		if (err) {
-			console.log(err.message);
-			res.status(400).send(err.message);
-		} else {
-			try {
-				const selectedProduct = req.body.product;
-				
-				await updateProductStock(
-					selectedProduct.productId,
-					selectedProduct.supplierEmail,
-					selectedProduct.quantity
-				);
+	try {
+		validationPipeline.execute(req.body, async function (error, result) {
+			if (error) {
+				res.status(400).send({ status: 400, message: error.message });
+				return;
+			} else {
+				try {
+					const selectedProduct = req.body.product;
 
-				// TODO: Chequear que este retornando el objeto actualizado.
-				// Get transaction and update status and product info.
-				let updatedTransaction = await Transaction.findOneAndUpdate(
-					req.transaction._id,
-					{
-						status: 'Pendiente de pago',
-						productId: selectedProduct.productId,
-						supplierEmail: selectedProduct.supplierEmail,
-						productQuantity: selectedProduct.quantity,
-					}
-				);
-				res.status(200).send(updatedTransaction);
-			} catch (error) {
-				console.log(error);
-				res.status(400).send(error.message);
+					await updateProductStock(
+						selectedProduct.productId,
+						selectedProduct.supplierEmail,
+						selectedProduct.quantity
+					);
+
+					let updatedTransaction = await Transaction.findOneAndUpdate(
+						req.transaction._id,
+						{
+							status: 'Pendiente de pago',
+							productId: selectedProduct.productId,
+							supplierEmail: selectedProduct.supplierEmail,
+							productQuantity: selectedProduct.quantity,
+							eventId: selectedProduct.eventId,
+						},
+						{ new: true }
+					);
+					res.status(200).send(updatedTransaction);
+				} catch (error) {
+					res.status(400).send({ status: 400, message: error.message });
+				}
 			}
-		}
-	});
+		});
+	} catch (error) {
+		res.status(400).send({ status: 400, message: error.message });
+	}
 });
 
-router.post('/payment', sessionValidator, sessionQueue, async (req, res) => {
-	try {
-		const { fullName, cardNumber, birthDate, billingAddress } = req.body;
+router.post(
+	'/payment',
+	sessionValidator,
+	sessionQueue,
+	paymentValidation,
+	async (req, res) => {
+		try {
+			const { fullName, cardNumber, birthDate, billingAddress } = req.body;
 
-		if (fullName && cardNumber && birthDate && billingAddress) {
-			// TODO: Chequear que este retornando el objeto actualizado.
-			// Get transaction and update status and product info.
+			const hashedCardNumber = crypto
+				.createHash('sha256')
+				.update(cardNumber)
+				.digest('base64');
+
 			let updatedTransaction = await Transaction.findOneAndUpdate(
 				req.transaction._id,
 				{
 					status: 'Completada',
 					paymentInfo: {
 						fullName: fullName,
-						cardNumber: cardNumber, // TODO: Encrypt this.
+						cardNumber: hashedCardNumber,
 						birthDate: birthDate,
 						billingAddress: billingAddress,
+						paymentDate: new Date().toUTCString(),
 					},
-				}
+				},
+				{ new: true }
 			);
-			res.status(200).send(updatedTransaction);
+
+			// Removing card number for the response, for security concerns.
+			updatedTransaction.paymentInfo.cardNumber = null;
+
+			res
+				.status(200)
+				.send({
+					transaction: updatedTransaction,
+					paymentUrl: process.env.PAYMENT_URL,
+				});
+		} catch (error) {
+			res.status(400).send({ status: 400, message: error.message });
 		}
-	} catch (error) {
-		console.log(req);
-		await updateProductStock(
-			req.transaction.productId,
-			req.transaction.supplierEmail,
-			-req.transaction.productQuantity
-		);
-		res.status(400).send(error.message);
 	}
-});
+);
 
 module.exports = router;
